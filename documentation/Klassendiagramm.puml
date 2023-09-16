@@ -9,11 +9,11 @@ class User
     - token: String
 
     + register(): void
-    + login(): Token
+    + login(): void
     + editProfile(): void
     + viewStats(): void
-    + updateELO(win: boolean): void
-    + checkToken(token: String): boolean
+    + updateELO(win: bool): void
+    + checkToken(token: string): bool
 }
 
 class Card
@@ -76,7 +76,7 @@ class Scoreboard
 {
     - users: List<User>
 
-    + getSortedELOList(): List<User>
+    + getScoreboard(): List<User>
 }
 
 User "1" -- "n" Card

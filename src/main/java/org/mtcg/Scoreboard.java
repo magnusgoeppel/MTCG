@@ -6,7 +6,7 @@ public class Scoreboard
 {
     private List<User> users;
 
-    public List<User> getSortedELOList()
+    public List<User> getScoreboard()
     {
         return users;
     }

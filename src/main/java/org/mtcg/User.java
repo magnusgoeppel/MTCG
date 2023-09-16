@@ -13,9 +13,9 @@ public class User
 
     }
 
-    public String login()
+    public void login()
     {
-        return token;
+
     }
 
     public void editProfile()
