@@ -1,0 +1,89 @@
+@startuml
+
+class User
+{
+    - username: String
+    - password: String
+    - coins: int
+    - eloValue: int
+    - token: String
+
+    + register(): void
+    + login(): Token
+    + editProfile(): void
+    + viewStats(): void
+    + updateELO(win: boolean): void
+    + checkToken(token: String): boolean
+}
+
+class Card
+{
+    - name: String
+    - damage: int
+    - elementType: String
+
+    + getDamage(): int
+    + getName(): String
+    + getElementType(): String
+}
+
+class MonsterCard extends Card
+{
+    + attack(): void
+}
+
+class SpellCard extends Card
+{
+    + castSpell(): void
+}
+
+class Deck
+{
+    - cards: List<Card>
+
+    + addCard(card: Card): void
+    + removeCard(card: Card): void
+    + getCards(): List<Card>
+}
+
+class Package
+{
+    - cards: List<Card>
+
+    + buyPackage(user: User): void
+}
+
+class Battle
+{
+    - user1: User
+    - user2: User
+    - log: String
+
+    + startBattle(): void
+    + getLog(): String
+}
+
+class Trade
+{
+    - offeredCard: Card
+    - requiredCard: Card
+
+    + initiateTrade(): void
+    + acceptTrade(): void
+}
+
+class Scoreboard
+{
+    - users: List<User>
+
+    + getSortedELOList(): List<User>
+}
+
+User "1" -- "n" Card
+User "1" -- "1" Deck
+User "1" -- "n" Package
+User "1" -- "n" Battle
+User "1" -- "n" Trade
+Scoreboard "1" -- "n" User
+
+@enduml
