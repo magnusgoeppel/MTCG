@@ -7,6 +7,7 @@ class User
     - coins: int
     - eloValue: int
     - token: String
+    - deck : Deck
 
     + register(): void
     + login(): void
@@ -34,7 +35,7 @@ class MonsterCard extends Card
 
 class SpellCard extends Card
 {
-    + castSpell(): void
+    + Spell(): void
 }
 
 class Deck
@@ -43,7 +44,7 @@ class Deck
 
     + addCard(card: Card): void
     + removeCard(card: Card): void
-    + getCards(): List<Card>
+    + getTopCards(): List<Card>
 }
 
 class Package
@@ -79,11 +80,13 @@ class Scoreboard
     + getScoreboard(): List<User>
 }
 
-User "1" -- "n" Card
-User "1" -- "1" Deck
-User "1" -- "n" Package
-User "1" -- "n" Battle
-User "1" -- "n" Trade
-Scoreboard "1" -- "n" User
+User "1" *-- "1" Deck : hat >
+User "1" o-- "n" Package : kauft >
+User "1" o-- "n" Battle : spielt >
+User "1" o-- "n" Trade :  macht >
+Deck "1" *-- "n" Card : enthält >
+Package "1" *-- "n" Card : enthält >
+Scoreboard "1" o-- "n" User : platziert >
+
 
 @enduml

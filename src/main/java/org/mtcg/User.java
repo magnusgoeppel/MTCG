@@ -8,6 +8,8 @@ public class User
     private int eloValue;
     private String token;
 
+    private Deck deck;
+
     public void register()
     {
 
