@@ -16,7 +16,7 @@ public class Deck
 
     }
 
-    public List<Card> getCards()
+    public List<Card> getTopCards()
     {
         return cards;
     }

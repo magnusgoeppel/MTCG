@@ -1,5 +1,11 @@
 package org.mtcg;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+
 public class User
 {
     private String username;
@@ -7,7 +13,6 @@ public class User
     private int coins;
     private int eloValue;
     private String token;
-
     private Deck deck;
 
     public void register()
