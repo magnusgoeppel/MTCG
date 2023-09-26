@@ -10,6 +10,7 @@ git commit -m '[Nachricht]' 	; Speichert festgelegte Änderungen
 git log                     	; Zeigt eine Liste aller Commits
 git push -u origin [Branchname]	; Schiebt Ihre Commits zu GitHub
 git pull                    	; Holt Änderungen von einem Remote-Repository
+git remote -v               	; Zeigt die URLs aller verknüpften entfernten Repositories an.
 
 # Arbeiten mit Branches
 git branch                 		; Listet alle lokalen Branches auf
