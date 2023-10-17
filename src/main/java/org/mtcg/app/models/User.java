@@ -1,4 +1,4 @@
-package org.mtcg;
+package org.mtcg.app.models;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +14,17 @@ public class User
     private int eloValue;
     private String token;
     private Deck deck;
+
+    public User(String username, String password, int coins, int eloValue, String token, Deck deck)
+    {
+        this.username = username;
+        this.password = password;
+        this.coins = coins;
+        this.eloValue = eloValue;
+        this.token = token;
+        this.deck = deck;
+    }
+
 
     public void register()
     {

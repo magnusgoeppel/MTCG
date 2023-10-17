@@ -1,4 +1,4 @@
-package org.mtcg;
+package org.mtcg.app.models;
 
 import java.util.List;
 
