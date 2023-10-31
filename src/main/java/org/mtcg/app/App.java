@@ -1,6 +1,6 @@
 package org.mtcg.app;
 
-public class app
+public class App
 {
 
 }

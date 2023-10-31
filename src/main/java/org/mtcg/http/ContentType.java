@@ -5,14 +5,16 @@ import lombok.Getter;
 @Getter
 public enum ContentType
 {
+    // Content-Types
     HTML("text/html"),
     TEXT("text/plain"),
     JSON("application/json");
 
-    private final String value;
+    private final String contentType;
 
+    // Konstruktor für die Content-Types
     ContentType(String value)
     {
-        this.value = value;
+        this.contentType = value;
     }
 }

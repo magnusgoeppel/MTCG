@@ -7,10 +7,10 @@ public class DatabaseSetup
 {
     public static void createTables()
     {
+        // Verbindung zur Datenbank aufbauen
         try (Connection connection = DatabaseConnection.getConnection();
              Statement stmt = connection.createStatement())
         {
-
             // Deck table
             String createDeckTable = "CREATE TABLE IF NOT EXISTS decks (" +
                                      "id SERIAL PRIMARY KEY" +
@@ -79,7 +79,7 @@ public class DatabaseSetup
                                       ")";
             stmt.execute(createTradeTable);
 
-            // Scoreboard table (optional)
+            // Scoreboard table
             String createScoreboardTable = "CREATE TABLE IF NOT EXISTS scoreboards (" +
                                            "id SERIAL PRIMARY KEY," +
                                            "user_id INT REFERENCES users(id)," +

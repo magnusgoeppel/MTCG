@@ -5,15 +5,14 @@ import lombok.Setter;
 
 @Getter
 @Setter
-
 public class User
 {
     private String username;
     private String password;
-    private int coins;
-    private int eloValue;
-    private String token;
-    private Deck deck;
+    private int coins = 0;
+    private int eloValue = 0;
+    private String token = null;
+    private Deck deck = null;
 
     public User(String username, String password, int coins, int eloValue, String token, Deck deck)
     {
@@ -23,12 +22,6 @@ public class User
         this.eloValue = eloValue;
         this.token = token;
         this.deck = deck;
-    }
-
-
-    public void register()
-    {
-
     }
 
     public void login()

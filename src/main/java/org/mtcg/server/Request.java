@@ -6,11 +6,13 @@ import lombok.Getter;
 @Getter
 public class Request
 {
+    // Variablen für die HTTP-Request-Parameter
     private final Method method;
     private final String path;
     private final String version;
     private final String body;
 
+    // Konstruktor für die HTTP-Request-Parameter
     public Request(Method method, String path, String version, String body)
     {
         this.method = method;
