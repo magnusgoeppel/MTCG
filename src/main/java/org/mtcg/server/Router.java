@@ -76,7 +76,7 @@ public class Router
             }
             else
             {
-                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Invalid credentials");
+                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "User login failed");
             }
         }
 
