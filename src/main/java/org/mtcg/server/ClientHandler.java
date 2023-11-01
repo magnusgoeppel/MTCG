@@ -28,7 +28,8 @@ public class ClientHandler implements Runnable
     public void run()
     {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-             OutputStream out = clientSocket.getOutputStream()) {
+             OutputStream out = clientSocket.getOutputStream())
+        {
 
             // Variablen für die HTTP-Request-Parameter
             String line;

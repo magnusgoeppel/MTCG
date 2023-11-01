@@ -8,6 +8,7 @@ import lombok.Setter;
 
 @Getter(AccessLevel.PRIVATE)
 @Setter(AccessLevel.PRIVATE)
+
 public class Response
 {
     // Variablen für die HTTP-Response-Parameter
