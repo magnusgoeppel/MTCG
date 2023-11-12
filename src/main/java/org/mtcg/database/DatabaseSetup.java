@@ -13,7 +13,7 @@ public class DatabaseSetup
         {
             // Deck table
             String createDeckTable = "CREATE TABLE IF NOT EXISTS decks (" +
-                                     "id SERIAL PRIMARY KEY" +
+                                     "id VARCHAR(255) PRIMARY KEY" +
                                      ")";
             stmt.execute(createDeckTable);
 
@@ -31,18 +31,18 @@ public class DatabaseSetup
 
             // Card table
             String createCardTable = "CREATE TABLE IF NOT EXISTS cards (" +
-                                     "id SERIAL PRIMARY KEY," +
+                                     "id VARCHAR(255) PRIMARY KEY ," +
                                      "name VARCHAR(255) NOT NULL," +
-                                     "damage INT NOT NULL," +
-                                     "elementType VARCHAR(255) NOT NULL," +
-                                     "type VARCHAR(50) NOT NULL CHECK (type IN ('MonsterCard', 'SpellCard'))" +
+                                     "damage DOUBLE PRECISION NOT NULL," +
+                                     "elementType VARCHAR(255)," +
+                                     "type VARCHAR(50)" +
                                      ")";
             stmt.execute(createCardTable);
 
             // Deck_Card relation table
             String createDeckCardRelationTable = "CREATE TABLE IF NOT EXISTS deck_cards (" +
                                                  "deck_id INT REFERENCES decks(id)," +
-                                                 "card_id INT REFERENCES cards(id)," +
+                                                 "card_id VARCHAR(255) REFERENCES cards(id)," +
                                                  "PRIMARY KEY (deck_id, card_id)" +
                                                  ")";
             stmt.execute(createDeckCardRelationTable);
@@ -56,7 +56,7 @@ public class DatabaseSetup
             // Package_Card relation table
             String createPackageCardRelationTable = "CREATE TABLE IF NOT EXISTS package_cards (" +
                                                     "package_id INT REFERENCES packages(id)," +
-                                                    "card_id INT REFERENCES cards(id)," +
+                                                    "card_id VARCHAR(255) REFERENCES cards(id)," +
                                                     "PRIMARY KEY (package_id, card_id)" +
                                                     ")";
             stmt.execute(createPackageCardRelationTable);
@@ -73,8 +73,8 @@ public class DatabaseSetup
             // Trade table
             String createTradeTable = "CREATE TABLE IF NOT EXISTS trades (" +
                                       "id SERIAL PRIMARY KEY," +
-                                      "offered_card_id INT REFERENCES cards(id)," +
-                                      "required_card_id INT REFERENCES cards(id)," +
+                                      "offered_card_id VARCHAR(255) REFERENCES cards(id)," +
+                                      "required_card_id VARCHAR(255) REFERENCES cards(id)," +
                                       "user_id INT REFERENCES users(id)" +
                                       ")";
             stmt.execute(createTradeTable);

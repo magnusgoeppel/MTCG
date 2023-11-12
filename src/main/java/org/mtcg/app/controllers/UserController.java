@@ -1,83 +1,59 @@
 package org.mtcg.app.controllers;
 
-import org.mtcg.database.DatabaseConnection;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import org.json.JSONObject;
+import org.mtcg.app.services.UserService;
+import org.mtcg.http.ContentType;
+import org.mtcg.http.HttpStatus;
+import org.mtcg.server.Request;
+import org.mtcg.server.Response;
 
-public class UserController
-{
-    // Verbindung zur Datenbank
-    private Connection connection;
+import java.util.UUID;
 
-    // Konstruktor für den UserController
-    public UserController()
-    {
-        this.connection = DatabaseConnection.getConnection();
+public class UserController {
+
+    private UserService userService;
+
+    public UserController() {
+        this.userService = new UserService();
     }
 
-    // Registrieren eines Benutzers
-    public boolean registerUser(String username, String password)
+    public Response handleRegister(Request request)
     {
-        try
-        {
-            // Überprüfen, ob der Benutzername bereits vergeben ist
-            String query = "INSERT INTO users (username, password) VALUES (?, ?)";
-            PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setString(1, username);
-            stmt.setString(2, password);
+        JSONObject json = new JSONObject(request.getBody());
+        String username = json.getString("Username");
+        String password = json.getString("Password");
 
-            // Führe die SQL-Abfrage aus
-            int result = stmt.executeUpdate();
+        boolean success = userService.registerUser(username, password);
 
-            return result > 0;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return false;
+        if (success) {
+            return new Response(HttpStatus.CREATED, ContentType.JSON, "User registered successfully");
+        } else {
+            return new Response(HttpStatus.CONFLICT, ContentType.JSON, "User registration failed");
         }
     }
 
-    // Anmelden eines Benutzers
-    public boolean loginUser(String username, String password)
+    public Response handleLogin(Request request)
     {
-        try
-        {
-            // Überprüfen, ob der Benutzername bereits vergeben ist
-            String query = "SELECT * FROM users WHERE username = ? AND password = ?";
-            PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setString(1, username);
-            stmt.setString(2, password);
+        JSONObject json = new JSONObject(request.getBody());
+        String username = json.getString("Username");
+        String password = json.getString("Password");
 
-            // Führe die SQL-Abfrage aus
-            ResultSet rs = stmt.executeQuery();
-            return rs.next();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return false;
+        boolean validCredentials = userService.loginUser(username, password);
+
+        if (validCredentials) {
+            String token = UUID.randomUUID().toString();
+            boolean tokenSaved = userService.saveUserToken(username, token);
+
+            if (tokenSaved) {
+                return new Response(HttpStatus.OK, ContentType.JSON, "User logged in successfully\nToken: " + token);
+            } else {
+                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Failed to save token");
+            }
+        } else {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "User login failed");
         }
     }
 
-    // Speichern Sie das Token für einen Benutzer in der Datenbank
-    public boolean saveUserToken(String username, String token)
-    {
-        try
-        {
-            String query = "UPDATE users SET token = ? WHERE username = ?";
-            PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setString(1, token);
-            stmt.setString(2, username);
-
-            int result = stmt.executeUpdate();
-            return result > 0;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return false;
-        }
-    }
+    // Weitere Methoden ...
 }
+

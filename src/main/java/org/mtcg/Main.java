@@ -1,6 +1,5 @@
 package org.mtcg;
 
-import org.mtcg.app.App;
 import org.mtcg.database.DatabaseSetup;
 import org.mtcg.server.Server;
 

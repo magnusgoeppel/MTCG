@@ -1,13 +1,14 @@
 package org.mtcg.server;
 
 import org.mtcg.http.Method;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClientHandler implements Runnable
 {
@@ -18,7 +19,7 @@ public class ClientHandler implements Runnable
 
     // Konstruktor für den ClientHandler
     public ClientHandler(Socket socket)
-    {;
+    {
         this.clientSocket = socket;
         this.router = new Router();
     }
@@ -52,10 +53,19 @@ public class ClientHandler implements Runnable
             }
 
             // Liest die Header-Zeilen und sucht nach Content-Length
+            Map<String, String> headers = new HashMap<>();
+
             while (!(line = in.readLine()).isEmpty())
             {
-                if (line.startsWith("Content-Length: ")) {
-                    contentLength = Integer.parseInt(line.split(":")[1].trim());
+                String[] headerParts = line.split(": ");
+
+                if (headerParts.length == 2)
+                {
+                    headers.put(headerParts[0], headerParts[1]);
+                    if ("Content-Length".equalsIgnoreCase(headerParts[0]))
+                    {
+                        contentLength = Integer.parseInt(headerParts[1].trim());
+                    }
                 }
             }
 
@@ -65,14 +75,17 @@ public class ClientHandler implements Runnable
             String requestBody = new String(bodyChars);
 
             // Erstellt ein Request-Objekt
-            Request request = new Request(Method.valueOf(requestMethod), requestPath, requestVersion, requestBody);
+            Request request = new Request(Method.valueOf(requestMethod), requestPath, requestVersion, requestBody, headers);
 
             // Verwenden Sie den Router, um die Anfrage zu verarbeiten und eine Antwort zu erhalten
             Response response = router.route(request);
             String httpResponse = response.build();
             out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
-
-        } catch (IOException e) {
+            // Stellt sicher, dass die Antwort gesendet wird, bevor Sie fortfahren
+            out.flush();
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
     }

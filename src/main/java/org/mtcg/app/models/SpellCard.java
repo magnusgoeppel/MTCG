@@ -2,9 +2,9 @@ package org.mtcg.app.models;
 
 public class SpellCard extends Card
 {
-    public SpellCard(String name, int damage, String elementType)
+    public SpellCard(String id, String name, double damage, String elementType, String type)
     {
-        super(name, damage, elementType);
+        super(id, name, damage, elementType, type);
     }
     public void castSpell()
     {

@@ -2,9 +2,9 @@ package org.mtcg.app.models;
 
 public class MonsterCard extends Card
 {
-    public MonsterCard(String name, int damage, String elementType)
+    public MonsterCard(String id, String name, double damage, String elementType, String type)
     {
-        super(name, damage, elementType);
+        super(id, name, damage, elementType, type);
     }
     public void attack()
     {
