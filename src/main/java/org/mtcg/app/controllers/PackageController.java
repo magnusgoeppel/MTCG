@@ -38,6 +38,7 @@ public class PackageController
                 String requestBody = request.getBody();
                 // Konvertieren Sie den JSON-String in eine Liste von Kartenobjekten
                 List<Card> cards = packageService.convertJsonToCards(requestBody);
+                System.out.println("Cards: "+cards);
 
                 // Erstellen Sie das Paket mit den Karten
                 boolean isPackageCreated = packageService.createPackage(cards);

@@ -1,8 +1,11 @@
 package org.mtcg.app.services;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mtcg.app.models.Card;
 import org.mtcg.database.DatabaseConnection;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -51,6 +54,7 @@ public class PackageService
                         System.out.println(card.getId());
                         insertCardStmt.setString(2, card.getName());
                         insertCardStmt.setDouble(3, card.getDamage());
+                        System.out.println(card.getDamage());
                         insertCardStmt.setString(4, card.getElementType());
                         insertCardStmt.setString(5, card.getType());
                         ResultSet cardResultSet = insertCardStmt.executeQuery();
@@ -110,52 +114,13 @@ public class PackageService
 
     public List<Card> convertJsonToCards(String json)
     {
-        List<Card> cards = new ArrayList<>();
-        // Trennt die einzelnen Karten
-        String[] jsonCards = json.split("\\},\\{");
-
-        for (String entry : jsonCards)
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(json, new TypeReference<List<Card>>() {});
+        } catch (IOException e)
         {
-            // Entfernt die umgebenden Klammern
-            entry = entry.replace("[{", "").replace("}]", "");
-            // Trennt die Eigenschaften der Karte
-            String[] properties = entry.split(",");
-
-            // Standardwerte, falls nicht vorhanden
-            String id = "";
-            String name = "";
-            double damage = 0.0;
-            String elementType = "";
-            String type = "";
-
-            for (String property : properties)
-            {
-                String[] keyValue = property.split("\":\"");
-                if (keyValue.length == 2)
-                {
-                    String key = keyValue[0].replace("\"", "").trim();
-                    String value = keyValue[1].replace("\"", "").trim();
-
-
-                    switch (key)
-                    {
-                        case "Id":
-                            id = value; // Behandeln Sie die ID als String
-                            break;
-                        case "Name":
-                            name = value;
-                            break;
-                        case "Damage":
-                            damage = Double.parseDouble(value); // Schäden sind Double-Werte
-                            break;
-                        case "Type":
-                            type = value;
-                            break;
-                    }
-                }
-            }
-            cards.add(new Card(id, name, damage, elementType, type));
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-        return cards;
     }
 }
