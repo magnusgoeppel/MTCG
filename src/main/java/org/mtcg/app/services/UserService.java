@@ -1,10 +1,10 @@
 package org.mtcg.app.services;
 
 import org.mtcg.database.DatabaseConnection;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class UserService
 {
@@ -14,26 +14,54 @@ public class UserService
     {
         this.connection = DatabaseConnection.getConnection();
     }
+
     // Registrieren eines Benutzers
-    public boolean registerUser(String username, String password)
-    {
-        try
-        {
-            // Überprüfen, ob der Benutzername bereits vergeben ist
-            String query = "INSERT INTO users (username, password) VALUES (?, ?)";
-            PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setString(1, username);
-            stmt.setString(2, password);
+    public boolean registerUser(String username, String password) {
+        try {
+            connection.setAutoCommit(false);
 
-            // Führe die SQL-Abfrage aus
-            int result = stmt.executeUpdate();
+            // Erstelle ein neues Deck und erhalte die ID
+            String insertDeckQuery = "INSERT INTO decks DEFAULT VALUES RETURNING id";
+            int deckId;
+            try (PreparedStatement insertDeckStmt = connection.prepareStatement(insertDeckQuery)) {
+                ResultSet deckRs = insertDeckStmt.executeQuery();
+                if (!deckRs.next()) {
+                    connection.rollback();
+                    return false;
+                }
+                deckId = deckRs.getInt(1);
+            }
 
-            return result > 0;
-        }
-        catch (Exception e)
-        {
+            // Füge den neuen Benutzer in die users Tabelle ein und setze die deck_id
+            String insertUserQuery = "INSERT INTO users (username, password, coins, elovalue, deck_id) VALUES (?, ?, 20, 100, ?)";
+            try (PreparedStatement insertUserStmt = connection.prepareStatement(insertUserQuery)) {
+                insertUserStmt.setString(1, username);
+                insertUserStmt.setString(2, password);
+                insertUserStmt.setInt(3, deckId); // Setze die deck_id auf die ID des neu erstellten Decks
+
+                int userResult = insertUserStmt.executeUpdate();
+                if (userResult == 1) {
+                    connection.commit();
+                    return true; // Benutzer erfolgreich registriert
+                } else {
+                    connection.rollback();
+                    return false; // Fehler beim Einfügen des Benutzers
+                }
+            }
+        } catch (Exception e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
             return false;
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 

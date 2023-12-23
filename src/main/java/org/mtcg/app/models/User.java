@@ -9,7 +9,7 @@ public class User
 {
     private String username;
     private String password;
-    private int coins = 0;
+    private int coins = 20;
     private int eloValue = 0;
     private String token = null;
     private Deck deck = null;

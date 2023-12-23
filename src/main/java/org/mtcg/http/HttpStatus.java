@@ -8,14 +8,12 @@ public enum HttpStatus
     // Status-Codes
     OK(200, "OK"),
     CREATED(201, "CREATED"),
-    BAD_REQUEST(400, "Bad Request"),
-    UNAUTHORIZED(401, "Unauthorized"),
-    FORBIDDEN(403, "Forbidden"),
-    NOT_FOUND(404, "Not Found"),
-    INTERNAL_SERVER_ERROR(500, "Internal Server Error"),
-    CONFLICT(409, "Conflict");
-
-
+    BAD_REQUEST(400, "BAD REQUEST"),
+    UNAUTHORIZED(401, "UNAUTHORIZED"),
+    FORBIDDEN(403, "FORBIDDEN"),
+    NOT_FOUND(404, "NOT FOUND"),
+    CONFLICT(409, "CONFLICT"),
+    INTERNAL_SERVER_ERROR(500, "INTERNAL SERVER ERROR");
 
     private final int code;
     private final String message;

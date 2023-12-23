@@ -112,15 +112,190 @@ public class PackageService
         }
     }
 
+    // Methode zum Konvertieren eines JSON-Strings in eine Liste von Kartenobjekten
     public List<Card> convertJsonToCards(String json)
     {
         ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.readValue(json, new TypeReference<List<Card>>() {});
+        try
+        {
+            return mapper.readValue(json, new TypeReference<>() {});
         } catch (IOException e)
         {
             e.printStackTrace();
             return new ArrayList<>();
+        }
+    }
+
+    public int getUserIdFromToken(String token)
+    {
+        int userId = -1;
+        String query = "SELECT id FROM users WHERE token = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query))
+        {
+            stmt.setString(1, token);
+            ResultSet resultSet = stmt.executeQuery();
+
+            if (resultSet.next())
+            {
+                userId = resultSet.getInt("id");
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return userId;
+    }
+
+    // Methode zum Kaufen eines Pakets
+    public boolean acquirePackage(int userId)
+    {
+        try
+        {
+            connection.setAutoCommit(false);
+
+            // Reduziere die Münzen des Benutzers um 5, wenn er genug Münzen hat
+            String query = "UPDATE users SET coins = coins - 5 WHERE id = ? AND coins >= 5";
+
+            try (PreparedStatement stmt = connection.prepareStatement(query))
+            {
+
+                stmt.setInt(1, userId);
+                int result = stmt.executeUpdate();
+
+                // Wenn der Benutzer genügend Münzen hat, fahren Sie fort
+                if (result > 0)
+                {
+                    // Wählen Sie ein Paket aus (z.B. das neueste oder ein zufälliges)
+                    int packageId = selectPackage(); // Implementieren Sie diese Methode entsprechend Ihrer Logik
+
+                    // Abrufen der Karten des Pakets
+                    List<String> cardIds = getCardsFromPackage(packageId);
+
+                    // Aktualisieren der deck_cards Tabelle
+                    for (String cardId : cardIds)
+                    {
+                        String insertDeckCardQuery = "INSERT INTO deck_cards (deck_id, card_id) VALUES (?, ?)";
+
+                        try (PreparedStatement insertDeckCardStmt = connection.prepareStatement(insertDeckCardQuery))
+                        {
+                            insertDeckCardStmt.setInt(1, getDeckIdForUser(userId));
+                            insertDeckCardStmt.setString(2, cardId);
+                            insertDeckCardStmt.executeUpdate();
+                        }
+                    }
+                    deletePackageAndCards(packageId);
+
+                    connection.commit();
+                    return true;
+                }
+                else
+                {
+                    connection.rollback();
+                    return false;
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            try
+            {
+                connection.rollback();
+            }
+            catch (SQLException ex)
+            {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+            return false;
+        }
+        finally
+        {
+            try
+            {
+                connection.setAutoCommit(true);
+            }
+            catch (SQLException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private int selectPackage() throws SQLException
+    {
+        String query = "SELECT id FROM packages ORDER BY RANDOM() DESC LIMIT 1";
+        try (PreparedStatement stmt = connection.prepareStatement(query))
+        {
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next())
+            {
+                return rs.getInt("id");
+            } else {
+                throw new SQLException("No packages found");
+            }
+        }
+    }
+
+
+    private List<String> getCardsFromPackage(int packageId) throws SQLException
+    {
+        List<String> cardIds = new ArrayList<>();
+
+        String query = "SELECT card_id FROM package_cards WHERE package_id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query))
+        {
+            stmt.setInt(1, packageId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next())
+            {
+                cardIds.add(rs.getString("card_id"));
+            }
+        }
+        return cardIds;
+    }
+
+
+    private int getDeckIdForUser(int userId) throws SQLException
+    {
+        String query = "SELECT deck_id FROM users WHERE id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next())
+            {
+                return rs.getInt("deck_id");
+            }
+            else
+            {
+                throw new SQLException("User not found or deck not set");
+            }
+        }
+    }
+
+    private void deletePackageAndCards(int packageId) throws SQLException
+    {
+        // Löschen Sie alle Karten aus der package_cards Tabelle, die zum Paket gehören
+        String deleteCardsQuery = "DELETE FROM package_cards WHERE package_id = ?";
+        try (PreparedStatement deleteCardsStmt = connection.prepareStatement(deleteCardsQuery))
+        {
+            deleteCardsStmt.setInt(1, packageId);
+            deleteCardsStmt.executeUpdate();
+        }
+
+        // Löschen Sie das Paket aus der packages Tabelle
+        String deletePackageQuery = "DELETE FROM packages WHERE id = ?";
+
+        try (PreparedStatement deletePackageStmt = connection.prepareStatement(deletePackageQuery))
+        {
+            deletePackageStmt.setInt(1, packageId);
+            deletePackageStmt.executeUpdate();
         }
     }
 }

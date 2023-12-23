@@ -51,6 +51,9 @@ public class Router
         {
             return packageController.handleCreatePackage(request);
         }
+        if (request.getMethod() == Method.POST && "/transactions/packages".equals(request.getPath())) {
+            return packageController.handleAcquirePackage(request);
+        }
         // Wenn keine passende Route gefunden wird, senden Sie eine 404-Antwort zurück
         return new Response(HttpStatus.NOT_FOUND, ContentType.HTML, "Not Found");
     }

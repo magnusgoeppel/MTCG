@@ -13,7 +13,7 @@ public class DatabaseSetup
         {
             // Deck table
             String createDeckTable = "CREATE TABLE IF NOT EXISTS decks (" +
-                                     "id VARCHAR(255) PRIMARY KEY" +
+                                     "id SERIAL PRIMARY KEY" +
                                      ")";
             stmt.execute(createDeckTable);
 
