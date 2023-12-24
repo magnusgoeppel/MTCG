@@ -1,30 +1,30 @@
 package org.mtcg.app.controllers;
 
-import org.mtcg.app.models.Card;
-import org.mtcg.app.services.CardsService;
+import org.mtcg.app.services.DeckService;
 import org.mtcg.app.services.CommonService;
+import org.mtcg.app.models.Card;
+import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.server.Request;
 import org.mtcg.server.Response;
-import org.mtcg.http.ContentType;
 
 import java.sql.SQLException;
 import java.util.List;
 
-public class CardsController
+
+public class DeckController
 {
-    private CardsService cardsService;
+    private DeckService deckService;
     private CommonService commonService;
 
-    public CardsController()
+    public DeckController()
     {
-        this.cardsService = new CardsService();
+        this.deckService = new DeckService();
         this.commonService = new CommonService();
     }
 
-    public Response handleGetCards(Request request)
+    public Response handleGetDeck(Request request)
     {
-        // Extrahieren des Authorization-Headers
         String authHeader = request.getHeaders().get("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer "))
@@ -39,22 +39,23 @@ public class CardsController
         {
             userId = commonService.getUserIdFromToken(token);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid token");
         }
 
         try
         {
-            List<Card> cards = cardsService.getCardsForUser(userId);
-            String cardsJson = commonService.convertToJson(cards);
-            return new Response(HttpStatus.OK, ContentType.JSON, cardsJson);
+            List<Card> deck = deckService.getDeckForUser(userId);
+            String deckJson = commonService.convertToJson(deck);
+
+            return new Response(HttpStatus.OK, ContentType.JSON, deckJson);
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Internal server error");
         }
     }
 }
+

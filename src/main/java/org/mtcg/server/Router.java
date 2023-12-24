@@ -3,6 +3,7 @@ package org.mtcg.server;
 import org.mtcg.app.controllers.PackageController;
 import org.mtcg.app.controllers.UserController;
 import org.mtcg.app.controllers.CardsController;
+import org.mtcg.app.controllers.DeckController;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.http.Method;
@@ -14,6 +15,7 @@ public class Router
     private final UserController userController;
     private final PackageController packageController;
     private final CardsController cardsController;
+    private final DeckController deckController;
 
     // Konstruktor für die Router-Klasse
     public Router()
@@ -21,6 +23,7 @@ public class Router
         this.userController = new UserController();
         this.packageController = new PackageController();
         this.cardsController = new CardsController();
+        this.deckController = new DeckController();
 
     }
 
@@ -54,6 +57,10 @@ public class Router
         }
         if (request.getMethod() == Method.GET && "/cards".equals(request.getPath())) {
             return cardsController.handleGetCards(request);
+        }
+        if (request.getMethod() == Method.GET && "/deck".equals(request.getPath()))
+        {
+            return deckController.handleGetDeck(request);
         }
 
         // Wenn keine passende Route gefunden wird, senden Sie eine 404-Antwort zurück
