@@ -54,6 +54,10 @@ public class Router
         if (request.getMethod() == Method.POST && "/transactions/packages".equals(request.getPath())) {
             return packageController.handleAcquirePackage(request);
         }
+        if (request.getMethod() == Method.GET && "/cards".equals(request.getPath())) {
+            //return handleGetCards(request);
+        }
+
         // Wenn keine passende Route gefunden wird, senden Sie eine 404-Antwort zurück
         return new Response(HttpStatus.NOT_FOUND, ContentType.HTML, "Not Found");
     }

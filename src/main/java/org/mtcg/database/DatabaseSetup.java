@@ -39,6 +39,14 @@ public class DatabaseSetup
                                      ")";
             stmt.execute(createCardTable);
 
+            // User_Card relation table
+            String createUserCardRelationTable = "CREATE TABLE IF NOT EXISTS user_cards (" +
+                                                 "user_id INT REFERENCES users(id)," +
+                                                 "card_id VARCHAR(255) REFERENCES cards(id)," +
+                                                 "PRIMARY KEY (user_id, card_id)" +
+                                                 ")";
+            stmt.execute(createUserCardRelationTable);
+
             // Deck_Card relation table
             String createDeckCardRelationTable = "CREATE TABLE IF NOT EXISTS deck_cards (" +
                                                  "deck_id INT REFERENCES decks(id)," +

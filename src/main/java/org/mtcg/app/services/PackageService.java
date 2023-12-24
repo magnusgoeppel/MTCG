@@ -167,23 +167,35 @@ public class PackageService
                 if (result > 0)
                 {
                     // Wählen Sie ein Paket aus (z.B. das neueste oder ein zufälliges)
-                    int packageId = selectPackage(); // Implementieren Sie diese Methode entsprechend Ihrer Logik
-
+                    int packageId = selectPackage();
                     // Abrufen der Karten des Pakets
                     List<String> cardIds = getCardsFromPackage(packageId);
+                    // Überprüfen Sie, wie viele Karten bereits im Deck sind
+                    int cardsInDeck = countCardsInDeck(userId);
 
                     // Aktualisieren der deck_cards Tabelle
-                    for (String cardId : cardIds)
-                    {
-                        String insertDeckCardQuery = "INSERT INTO deck_cards (deck_id, card_id) VALUES (?, ?)";
+                    for (String cardId : cardIds) {
+                        // Fügen Sie die Karte zur user_cards Tabelle hinzu
+                        String insertUserCardQuery = "INSERT INTO user_cards (user_id, card_id) VALUES (?, ?)";
+                        try (PreparedStatement insertUserCardStmt = connection.prepareStatement(insertUserCardQuery)) {
+                            insertUserCardStmt.setInt(1, userId);
+                            insertUserCardStmt.setString(2, cardId);
+                            insertUserCardStmt.executeUpdate();
+                        }
 
-                        try (PreparedStatement insertDeckCardStmt = connection.prepareStatement(insertDeckCardQuery))
+                        // Fügen Sie die ersten 4 Karten zum Deck des Benutzers hinzu
+                        if (cardsInDeck < 4)
                         {
-                            insertDeckCardStmt.setInt(1, getDeckIdForUser(userId));
-                            insertDeckCardStmt.setString(2, cardId);
-                            insertDeckCardStmt.executeUpdate();
+                            String insertDeckCardQuery = "INSERT INTO deck_cards (deck_id, card_id) VALUES (?, ?)";
+                            try (PreparedStatement insertDeckCardStmt = connection.prepareStatement(insertDeckCardQuery)) {
+                                insertDeckCardStmt.setInt(1, getDeckIdForUser(userId));
+                                insertDeckCardStmt.setString(2, cardId);
+                                insertDeckCardStmt.executeUpdate();
+                            }
+                            cardsInDeck++; // Erhöhen Sie den Zähler
                         }
                     }
+
                     deletePackageAndCards(packageId);
 
                     connection.commit();
@@ -224,7 +236,7 @@ public class PackageService
 
     private int selectPackage() throws SQLException
     {
-        String query = "SELECT id FROM packages ORDER BY RANDOM() DESC LIMIT 1";
+        String query = "SELECT id FROM packages ORDER BY id LIMIT 1";
         try (PreparedStatement stmt = connection.prepareStatement(query))
         {
             ResultSet rs = stmt.executeQuery();
@@ -297,5 +309,17 @@ public class PackageService
             deletePackageStmt.setInt(1, packageId);
             deletePackageStmt.executeUpdate();
         }
+    }
+    private int countCardsInDeck(int userId) throws SQLException
+    {
+        String query = "SELECT COUNT(*) FROM deck_cards WHERE deck_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, getDeckIdForUser(userId));
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0; // oder werfen Sie eine geeignete Ausnahme
     }
 }
