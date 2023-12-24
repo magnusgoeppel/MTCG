@@ -112,41 +112,6 @@ public class PackageService
         }
     }
 
-    // Methode zum Konvertieren eines JSON-Strings in eine Liste von Kartenobjekten
-    public List<Card> convertJsonToCards(String json)
-    {
-        ObjectMapper mapper = new ObjectMapper();
-        try
-        {
-            return mapper.readValue(json, new TypeReference<>() {});
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-    }
-
-    public int getUserIdFromToken(String token)
-    {
-        int userId = -1;
-        String query = "SELECT id FROM users WHERE token = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(query))
-        {
-            stmt.setString(1, token);
-            ResultSet resultSet = stmt.executeQuery();
-
-            if (resultSet.next())
-            {
-                userId = resultSet.getInt("id");
-            }
-        } catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-        return userId;
-    }
-
     // Methode zum Kaufen eines Pakets
     public boolean acquirePackage(int userId)
     {
@@ -192,7 +157,7 @@ public class PackageService
                                 insertDeckCardStmt.setString(2, cardId);
                                 insertDeckCardStmt.executeUpdate();
                             }
-                            cardsInDeck++; // Erhöhen Sie den Zähler
+                            cardsInDeck++;
                         }
                     }
 
@@ -320,6 +285,20 @@ public class PackageService
                 return rs.getInt(1);
             }
         }
-        return 0; // oder werfen Sie eine geeignete Ausnahme
+        return 0;
+    }
+
+    // Methode zum Konvertieren eines JSON-Strings in eine Liste von Kartenobjekten
+    public List<Card> convertJsonToCards(String json)
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        try
+        {
+            return mapper.readValue(json, new TypeReference<>() {});
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 }

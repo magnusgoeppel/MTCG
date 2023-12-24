@@ -1,28 +1,26 @@
 package org.mtcg.server;
 
-import lombok.Getter;
 import org.mtcg.app.controllers.PackageController;
 import org.mtcg.app.controllers.UserController;
-import org.mtcg.app.models.Card;
+import org.mtcg.app.controllers.CardsController;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
-import org.json.JSONObject;
 import org.mtcg.http.Method;
 
-import java.util.List;
-import java.util.UUID;
 
 public class Router
 {
     // Variablen für die Router-Klasse
     private final UserController userController;
     private final PackageController packageController;
+    private final CardsController cardsController;
 
     // Konstruktor für die Router-Klasse
     public Router()
     {
         this.userController = new UserController();
         this.packageController = new PackageController();
+        this.cardsController = new CardsController();
 
     }
 
@@ -55,7 +53,7 @@ public class Router
             return packageController.handleAcquirePackage(request);
         }
         if (request.getMethod() == Method.GET && "/cards".equals(request.getPath())) {
-            //return handleGetCards(request);
+            return cardsController.handleGetCards(request);
         }
 
         // Wenn keine passende Route gefunden wird, senden Sie eine 404-Antwort zurück

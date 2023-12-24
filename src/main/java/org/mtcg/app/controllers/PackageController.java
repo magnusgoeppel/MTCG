@@ -2,19 +2,26 @@ package org.mtcg.app.controllers;
 
 import org.mtcg.app.models.Card;
 import org.mtcg.app.services.PackageService;
+import org.mtcg.app.services.CommonService;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.server.Request;
 import org.mtcg.server.Response;
+
+
 import java.util.List;
 
 public class PackageController
 {
     private PackageService packageService;
+    private CommonService commonService;
+
 
     public PackageController()
     {
         this.packageService = new PackageService();
+        this.commonService = new CommonService();
+
     }
 
     public Response handleCreatePackage(Request request)
@@ -66,7 +73,7 @@ public class PackageController
 
 
             // Überprüfen Sie den Token und holen Sie die Benutzer-ID
-            int userId = packageService.getUserIdFromToken(token);
+            int userId = commonService.getUserIdFromToken(token);
 
             if (userId == -1)
             {
@@ -90,5 +97,6 @@ public class PackageController
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized");
         }
     }
+
 }
 
