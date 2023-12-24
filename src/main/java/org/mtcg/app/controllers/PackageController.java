@@ -67,36 +67,29 @@ public class PackageController
         // Extrahieren des Authorization-Headers
         String authHeader = request.getHeaders().get("Authorization");
 
-        if (authHeader != null && authHeader.startsWith("Bearer "))
+        int userId;
+        try
         {
-            String token = authHeader.substring(7);
+            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
+        }
 
+        // Versuchen Sie, das Paket zu erwerben
+        boolean isPackageAcquired = packageService.acquirePackage(userId);
 
-            // Überprüfen Sie den Token und holen Sie die Benutzer-ID
-            int userId = commonService.getUserIdFromToken(token);
-
-            if (userId == -1)
-            {
-                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid token");
-            }
-
-            // Versuchen Sie, das Paket zu erwerben
-            boolean isPackageAcquired = packageService.acquirePackage(userId);
-
-            if (isPackageAcquired)
-            {
-                return new Response(HttpStatus.OK, ContentType.JSON, "Package successfully acquired");
-            }
-            else
-            {
-                return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "An error occurred while acquiring the package");
-            }
+        if (isPackageAcquired)
+        {
+            return new Response(HttpStatus.OK, ContentType.JSON, "Package successfully acquired");
         }
         else
         {
-            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized");
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "An error occurred while acquiring the package");
         }
     }
-
 }
+
 

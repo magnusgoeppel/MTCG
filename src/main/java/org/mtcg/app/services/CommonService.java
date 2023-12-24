@@ -3,6 +3,10 @@ package org.mtcg.app.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mtcg.app.models.Card;
 import org.mtcg.database.DatabaseConnection;
+import org.mtcg.http.ContentType;
+import org.mtcg.http.HttpStatus;
+import org.mtcg.server.Response;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,6 +20,27 @@ public class CommonService
     public CommonService()
     {
         this.connection = DatabaseConnection.getConnection();
+    }
+
+    public int extractUserIdFromAuthHeader(String authHeader) throws Exception
+    {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new Exception("Unauthorized: No token provided");
+        }
+
+        String token = authHeader.substring(7); // Entfernen von "Bearer "
+
+        int userId;
+
+        try
+        {
+            userId = getUserIdFromToken(token);
+        }
+        catch (Exception e)
+        {
+            throw new Exception("Unauthorized: Invalid token");
+        }
+        return userId;
     }
 
     public int getUserIdFromToken(String token)
@@ -52,4 +77,6 @@ public class CommonService
             return null;
         }
     }
+
+
 }

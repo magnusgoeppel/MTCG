@@ -27,22 +27,15 @@ public class CardsController
         // Extrahieren des Authorization-Headers
         String authHeader = request.getHeaders().get("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer "))
-        {
-            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: No token provided");
-        }
-
-        String token = authHeader.substring(7);
         int userId;
-
         try
         {
-            userId = commonService.getUserIdFromToken(token);
+            userId = commonService.extractUserIdFromAuthHeader(authHeader);
         }
         catch (Exception e)
         {
             e.printStackTrace();
-            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid token");
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
         try
