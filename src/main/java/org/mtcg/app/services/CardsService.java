@@ -82,12 +82,9 @@ public class CardsService
 
     public boolean configureDeckForUser(int userId, List<String> cardIds)
     {
-        if (cardIds == null || cardIds.size() != 4)
-        {
-            return false;
-        }
 
         Connection connection = null;
+
         try
         {
             connection = DatabaseConnection.getConnection();
@@ -155,5 +152,20 @@ public class CardsService
             }
         }
         return false; // Standardmäßig false zurückgeben, wenn die Abfrage nicht erfolgreich war oder keine Karten gefunden wurden
+    }
+
+    public boolean isDeckSizeValid(String requestBody)
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        try
+        {
+            List<String> cardIds = mapper.readValue(requestBody, new TypeReference<>(){});
+            return cardIds.size() == 4;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

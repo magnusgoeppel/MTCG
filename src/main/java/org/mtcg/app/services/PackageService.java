@@ -46,7 +46,7 @@ public class PackageService
                 // Füge alle Karten in die cards Tabelle ein und hole dir die IDs
                 for (Card card : cards)
                 {
-                    String insertCardSql = "INSERT INTO cards (id, name, damage, elementType, type) VALUES (?, ?, ?, ?, ?) RETURNING id";
+                    String insertCardSql = "INSERT INTO cards (id, name, damage) VALUES (?, ?, ?) RETURNING id";
 
                     try (PreparedStatement insertCardStmt = connection.prepareStatement(insertCardSql))
                     {
@@ -55,8 +55,6 @@ public class PackageService
                         insertCardStmt.setString(2, card.getName());
                         insertCardStmt.setDouble(3, card.getDamage());
                         System.out.println(card.getDamage());
-                        insertCardStmt.setString(4, card.getElementType());
-                        insertCardStmt.setString(5, card.getType());
                         ResultSet cardResultSet = insertCardStmt.executeQuery();
 
                         if (!cardResultSet.next())

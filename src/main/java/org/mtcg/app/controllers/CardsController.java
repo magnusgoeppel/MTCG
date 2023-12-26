@@ -104,23 +104,36 @@ public class CardsController
         try
         {
             userId = commonService.extractUserIdFromAuthHeader(authHeader);
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
         try
         {
+            // Überprüfe die Anzahl der Karten im Deck
+            boolean isDeckSizeValid = cardsService.isDeckSizeValid(request.getBody());
+
+            if (!isDeckSizeValid)
+            {
+                return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "The deck must contain exactly 4 cards");
+            }
+
             // Extrahieren der Karten-IDs aus dem Request Body
             List<String> cardIds = cardsService.extractCardIdsFromRequestBody(request.getBody());
 
             // Überprüfen Sie, ob alle Karten dem Benutzer gehören und verfügbar sind
             boolean areCardsValid = cardsService.areCardsValidAndBelongToUser(userId, cardIds);
 
+            // Wenn die Karten ungültig sind, wird eine 403-Antwort zurückgegeben
             if (!areCardsValid)
             {
                 return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "The provided deck contains invalid cards");
             }
+
+
+
 
             boolean success = cardsService.configureDeckForUser(userId, cardIds);
 
@@ -128,15 +141,12 @@ public class CardsController
             {
                 return new Response(HttpStatus.OK, ContentType.JSON, "The deck has been successfully configured");
             }
-            else
-            {
-                return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "The provided deck did not include the required amount of cards or contains invalid cards");
-            }
+
         }
         catch (Exception e)
         {
             e.printStackTrace();
-            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Internal server error");
         }
+        return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Internal server error");
     }
 }
