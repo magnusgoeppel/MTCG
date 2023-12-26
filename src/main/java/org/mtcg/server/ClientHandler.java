@@ -69,13 +69,31 @@ public class ClientHandler implements Runnable
                 }
             }
 
+            // extrahiert die Query-Parameter (?format=plain)
+            Map<String, String> queryParams = new HashMap<>();
+
+            if (requestPath.contains("?"))
+            {
+                String[] pathParts = requestPath.split("\\?");
+                requestPath = pathParts[0];
+                String[] queryParts = pathParts[1].split("&");
+                for (String queryPart : queryParts)
+                {
+                    String[] queryParamParts = queryPart.split("=");
+                    if (queryParamParts.length == 2)
+                    {
+                        queryParams.put(queryParamParts[0], queryParamParts[1]);
+                    }
+                }
+            }
+
             // Liest den Request-Body
             char[] bodyChars = new char[contentLength];
             in.read(bodyChars, 0, contentLength);
             String requestBody = new String(bodyChars);
 
             // Erstellt ein Request-Objekt
-            Request request = new Request(Method.valueOf(requestMethod), requestPath, requestVersion, requestBody, headers);
+            Request request = new Request(Method.valueOf(requestMethod), requestPath, requestVersion, requestBody, headers, queryParams);
 
             // Verwenden Sie den Router, um die Anfrage zu verarbeiten und eine Antwort zu erhalten
             Response response = router.route(request);

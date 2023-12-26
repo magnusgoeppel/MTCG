@@ -168,4 +168,30 @@ public class CardsService
             return false;
         }
     }
+
+
+    public String convertToJson(List<Card> cards)
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        try
+        {
+            return mapper.writeValueAsString(cards);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String convertDeckToPlain(List<Card> deck)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (Card card : deck)
+        {
+            // Id, Name und Schaden der Karte an den String anhängen
+            sb.append(card.getId()).append(", ").append(card.getName()).append(", ").append(card.getDamage()).append("\n");
+        }
+        return sb.toString();
+    }
 }

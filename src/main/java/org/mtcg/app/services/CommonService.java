@@ -64,33 +64,4 @@ public class CommonService
         return userId;
     }
 
-    public String convertCardsToJson(List<Card> cards)
-    {
-        ObjectMapper mapper = new ObjectMapper();
-        try
-        {
-            return mapper.writeValueAsString(cards);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    // Methode zum Konvertieren eines JSON-Strings in eine Liste von Kartenobjekten
-    public List<Card> convertJsonToCards(String json)
-    {
-        ObjectMapper mapper = new ObjectMapper();
-        try
-        {
-            return mapper.readValue(json, new TypeReference<>() {});
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-    }
-
-
 }

@@ -41,16 +41,14 @@ public class CardsController
         {
             List<Card> cards = cardsService.getCardsForUser(userId);
 
-            String cardsJson = commonService.convertCardsToJson(cards);
+            String cardsJson = cardsService.convertToJson(cards);
 
             if (cards.isEmpty())
             {
                 return new Response(HttpStatus.NO_CONTENT, ContentType.JSON, cardsJson);
             }
-            else
-            {
-                return new Response(HttpStatus.OK, ContentType.JSON, cardsJson);
-            }
+            return new Response(HttpStatus.OK, ContentType.JSON, cardsJson);
+
         }
         catch (Exception e)
         {
@@ -62,6 +60,7 @@ public class CardsController
     public Response handleGetDeck(Request request)
     {
         String authHeader = request.getHeaders().get("Authorization");
+        String format = request.getQueryParams().get("format");
 
         int userId;
         try
@@ -78,15 +77,27 @@ public class CardsController
         {
             List<Card>deck = cardsService.getDeckForUser(userId);
 
-            // Wenn der Benutzer kein Deck hat, wird ein leeres JSON-Array zurückgegeben
-            if (deck.isEmpty())
+            String response;
+            ContentType responseType;
+
+            if("plain".equals(format))
             {
-                return new Response(HttpStatus.OK, ContentType.JSON, "[]");
+                responseType = ContentType.TEXT;
+                response = cardsService.convertDeckToPlain(deck);
+            }
+            else
+            {
+                response = cardsService.convertToJson(deck);
+                responseType = ContentType.JSON;
             }
 
-            String deckJson = commonService.convertCardsToJson(deck);
+            // Wenn das Deck leer ist, wird eine 204-Antwort zurückgegeben
+            if (deck.isEmpty())
+            {
+                return new Response(HttpStatus.NO_CONTENT, responseType, response);
+            }
 
-            return new Response(HttpStatus.OK, ContentType.JSON, deckJson);
+            return new Response(HttpStatus.OK, responseType, response);
         }
         catch (SQLException e)
         {
