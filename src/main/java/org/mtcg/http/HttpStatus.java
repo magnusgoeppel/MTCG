@@ -8,6 +8,7 @@ public enum HttpStatus
     // Status-Codes
     OK(200, "OK"),
     CREATED(201, "CREATED"),
+    NO_CONTENT(204, "NO CONTENT"),
     BAD_REQUEST(400, "BAD REQUEST"),
     UNAUTHORIZED(401, "UNAUTHORIZED"),
     FORBIDDEN(403, "FORBIDDEN"),

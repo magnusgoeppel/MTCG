@@ -1,6 +1,7 @@
 openapi: 3.0.3
 info:
   title: Monster Trading Cards Game
+  version: 1.0.0
   description: |-
     This is the specification of the required API endpoints for the MTCG server.
 servers:

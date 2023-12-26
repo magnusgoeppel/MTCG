@@ -135,8 +135,6 @@ public class PackageService
                     int packageId = selectPackage();
                     // Abrufen der Karten des Pakets
                     List<String> cardIds = getCardsFromPackage(packageId);
-                    // Überprüfen Sie, wie viele Karten bereits im Deck sind
-                    int cardsInDeck = countCardsInDeck(userId);
 
                     // Aktualisieren der deck_cards Tabelle
                     for (String cardId : cardIds) {
@@ -146,18 +144,6 @@ public class PackageService
                             insertUserCardStmt.setInt(1, userId);
                             insertUserCardStmt.setString(2, cardId);
                             insertUserCardStmt.executeUpdate();
-                        }
-
-                        // Fügen Sie die ersten 4 Karten zum Deck des Benutzers hinzu
-                        if (cardsInDeck < 4)
-                        {
-                            String insertDeckCardQuery = "INSERT INTO deck_cards (deck_id, card_id) VALUES (?, ?)";
-                            try (PreparedStatement insertDeckCardStmt = connection.prepareStatement(insertDeckCardQuery)) {
-                                insertDeckCardStmt.setInt(1, getDeckIdForUser(userId));
-                                insertDeckCardStmt.setString(2, cardId);
-                                insertDeckCardStmt.executeUpdate();
-                            }
-                            cardsInDeck++;
                         }
                     }
 
@@ -240,7 +226,8 @@ public class PackageService
     {
         String query = "SELECT deck_id FROM users WHERE id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (PreparedStatement stmt = connection.prepareStatement(query))
+        {
 
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
@@ -278,7 +265,8 @@ public class PackageService
     private int countCardsInDeck(int userId) throws SQLException
     {
         String query = "SELECT COUNT(*) FROM deck_cards WHERE deck_id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (PreparedStatement stmt = connection.prepareStatement(query))
+        {
             stmt.setInt(1, getDeckIdForUser(userId));
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -300,5 +288,89 @@ public class PackageService
             e.printStackTrace();
             return new ArrayList<>();
         }
+    }
+
+    public boolean checkCardsExistence(List<Card> cards)
+    {
+        String query = "SELECT id FROM cards WHERE id = ?";
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
+        {
+            for (Card card : cards)
+            {
+                stmt.setString(1, card.getId());
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next())
+                {
+                    return true; // Mindestens eine Karte existiert bereits
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public String getAdminToken()
+    {
+        String adminToken = null;
+        String query = "SELECT token FROM users WHERE username = 'admin'";
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
+        {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                adminToken = rs.getString("token");
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return adminToken;
+    }
+
+    // Methode zum Überprüfen, ob ein Benutzer genügend Münzen hat
+    public boolean checkCoins(int userId)
+    {
+        String query = "SELECT coins FROM users WHERE id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next())
+            {
+                int coins = rs.getInt("coins");
+                return coins >= 5;
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Methode zum Überprüfen, ob ein Paket verfügbar ist
+    public boolean checkPackageAvailable()
+    {
+        String query = "SELECT COUNT(*) AS package_count FROM packages";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
+        {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next())
+            {
+                int packageCount = rs.getInt("package_count");
+                return packageCount > 0;
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

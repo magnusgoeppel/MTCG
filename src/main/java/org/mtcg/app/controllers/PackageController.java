@@ -9,6 +9,7 @@ import org.mtcg.server.Request;
 import org.mtcg.server.Response;
 
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class PackageController
@@ -32,7 +33,7 @@ public class PackageController
         {
             String token = authHeader.substring(7);
 
-            if ("admin-mtcgToken".equals(token))
+            if (packageService.getAdminToken().equals(token))
             {
                 // Extrahieren Sie die Daten aus dem Anfragekörper
                 String requestBody = request.getBody();
@@ -40,6 +41,12 @@ public class PackageController
                 List<Card> cards = packageService.convertJsonToCards(requestBody);
                 System.out.println("Cards: "+cards);
 
+                boolean isCardDouble = packageService.checkCardsExistence(cards);
+
+                if(isCardDouble)
+                {
+                    return new Response(HttpStatus.CONFLICT, ContentType.JSON, "Card already exists");
+                }
                 // Erstellen Sie das Paket mit den Karten
                 boolean isPackageCreated = packageService.createPackage(cards);
 
@@ -74,8 +81,23 @@ public class PackageController
         }
         catch (Exception e)
         {
-            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
+        }
+
+        // Überprüfen Sie, ob der Benutzer genügend Münzen hat, um das Paket zu kaufen
+        boolean hasEnoughCoins = packageService.checkCoins(userId);
+
+        if (!hasEnoughCoins)
+        {
+            return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "The user doesn't have enough coins to acquire the package");
+        }
+
+        // Überprüfen Sie, ob ein Paket zum Kauf verfügbar ist
+        boolean isPackageAvailable = packageService.checkPackageAvailable();
+
+        if(!isPackageAvailable)
+        {
+            return new Response(HttpStatus.NOT_FOUND, ContentType.JSON, "No card package available for buying");
         }
 
         // Versuchen Sie, das Paket zu erwerben

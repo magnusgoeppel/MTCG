@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 
-@JsonPropertyOrder({ "Id", "Name", "Damage", "elementType", "type" })
+@JsonPropertyOrder({ "Id", "Name", "Damage"})
 @Getter
 public class Card
 {
@@ -28,6 +28,13 @@ public class Card
         this.damage = damage;
         this.elementType = elementType;
         this.type = type;
+    }
+
+    public Card(String id, String name, double damage)
+    {
+        this.id = id;
+        this.name = name;
+        this.damage = damage;
     }
 }
 

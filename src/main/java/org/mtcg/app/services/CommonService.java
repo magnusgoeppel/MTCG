@@ -1,16 +1,16 @@
 package org.mtcg.app.services;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mtcg.app.models.Card;
 import org.mtcg.database.DatabaseConnection;
-import org.mtcg.http.ContentType;
-import org.mtcg.http.HttpStatus;
-import org.mtcg.server.Response;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CommonService
@@ -64,7 +64,7 @@ public class CommonService
         return userId;
     }
 
-    public String convertToJson(List<Card> cards)
+    public String convertCardsToJson(List<Card> cards)
     {
         ObjectMapper mapper = new ObjectMapper();
         try
@@ -75,6 +75,20 @@ public class CommonService
         {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    // Methode zum Konvertieren eines JSON-Strings in eine Liste von Kartenobjekten
+    public List<Card> convertJsonToCards(String json)
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        try
+        {
+            return mapper.readValue(json, new TypeReference<>() {});
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
 
