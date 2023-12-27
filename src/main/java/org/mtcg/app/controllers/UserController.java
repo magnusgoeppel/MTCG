@@ -65,7 +65,6 @@ public class UserController
         // Extrahieren des Authorization-Headers
         String authHeader = request.getHeaders().get("Authorization");
 
-
         int userId;
         try {
             userId = commonService.extractUserIdFromAuthHeader(authHeader);

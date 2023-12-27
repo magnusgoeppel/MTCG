@@ -22,11 +22,10 @@ public class DatabaseSetup
                                      "id SERIAL PRIMARY KEY," +
                                      "username VARCHAR(255) UNIQUE NOT NULL," +
                                      "password VARCHAR(255) NOT NULL," +
-                                     "Name VARCHAR(255)," +
+                                     "name VARCHAR(255)," +
                                      "Bio VARCHAR(255)," +
                                      "image VARCHAR(255)," +
                                      "coins INT DEFAULT 0," +
-                                     "eloValue INT DEFAULT 0," +
                                      "token VARCHAR(255)," +
                                      "deck_id INT REFERENCES decks(id)" +
                                      ")";
@@ -63,6 +62,16 @@ public class DatabaseSetup
                                         "id SERIAL PRIMARY KEY" +
                                         ")";
             stmt.execute(createPackageTable);
+
+            //Stats table
+            String createStatsTable = "CREATE TABLE IF NOT EXISTS stats (" +
+                                      "id SERIAL PRIMARY KEY," +
+                                      "user_id INT REFERENCES users(id)," +
+                                      "elo INT DEFAULT 0," +
+                                      "wins INT DEFAULT 0," +
+                                      "losses INT DEFAULT 0," +
+                                      ")";
+            stmt.execute(createStatsTable);
 
             // Package_Card relation table
             String createPackageCardRelationTable = "CREATE TABLE IF NOT EXISTS package_cards (" +

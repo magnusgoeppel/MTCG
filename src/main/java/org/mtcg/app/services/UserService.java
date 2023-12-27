@@ -1,5 +1,6 @@
 package org.mtcg.app.services;
 
+import org.json.JSONObject;
 import org.mtcg.database.DatabaseConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,14 +34,24 @@ public class UserService
             }
 
             // Füge den neuen Benutzer in die users Tabelle ein und setze die deck_id
-            String insertUserQuery = "INSERT INTO users (username, password, coins, elovalue, deck_id) VALUES (?, ?, 20, 100, ?)";
+            String insertUserQuery = "INSERT INTO users (username, password, coins, deck_id) VALUES (?, ?, 20, ?)";
             try (PreparedStatement insertUserStmt = connection.prepareStatement(insertUserQuery)) {
                 insertUserStmt.setString(1, username);
                 insertUserStmt.setString(2, password);
                 insertUserStmt.setInt(3, deckId); // Setze die deck_id auf die ID des neu erstellten Decks
 
                 int userResult = insertUserStmt.executeUpdate();
-                if (userResult == 1) {
+                if (userResult == 1)
+                {
+                    // Rufe Methode zum Stats erstellen auf
+                    boolean statsCreated = createStats(username);
+
+                    if(!statsCreated)
+                    {
+                        connection.rollback();
+                        return false;
+                    }
+
                     connection.commit();
                     return true; // Benutzer erfolgreich registriert
                 } else {
@@ -119,12 +130,14 @@ public class UserService
             ResultSet rs = stmt.executeQuery();
             if (rs.next())
             {
-                String name = rs.getString("name");
-                String bio = rs.getString("bio");
-                String image = rs.getString("image");
+                JSONObject userData = new JSONObject();
+                userData.put("Name", rs.getString("name"));
+                userData.put("Bio", rs.getString("bio"));
+                userData.put("Image", rs.getString("image"));
 
-                return "{\"Name\":\"" + name + "\",\"Bio\":\"" + bio + "\",\"Image\":\"" + image + "\"}";
+                return userData.toString();
             }
+
             else
             {
                 return null;
@@ -148,6 +161,25 @@ public class UserService
             stmt.setString(2, bio);
             stmt.setString(3, image);
             stmt.setInt(4, userId);
+
+            int result = stmt.executeUpdate();
+            return result > 0;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Erstellen Sie die Stats für einen Benutzer
+    public boolean createStats(String user_id)
+    {
+        try
+        {
+            String query = "INSERT INTO stats (user_id, elo, wins, losses) VALUES (?, 0, 0, 0)";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, user_id);
 
             int result = stmt.executeUpdate();
             return result > 0;
