@@ -45,6 +45,7 @@ public class UserService
                 {
                     // Rufe Methode zum Stats erstellen auf
                     boolean statsCreated = createStats(username);
+                    boolean userAddedToScoreboard = addUserToScoreboard(username);
 
                     if(!statsCreated)
                     {
@@ -178,6 +179,25 @@ public class UserService
         try
         {
             String query = "INSERT INTO stats (user_id, elo, wins, losses) VALUES (?, 0, 0, 0)";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, user_id);
+
+            int result = stmt.executeUpdate();
+            return result > 0;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Fügen Sie einen Benutzer zum Scoreboard hinzu
+    public boolean addUserToScoreboard(String user_id)
+    {
+        try
+        {
+            String query = "INSERT INTO scoreboards (user_id, score) VALUES (?, 0)";
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setString(1, user_id);
 

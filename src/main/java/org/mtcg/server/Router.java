@@ -83,8 +83,13 @@ public class Router
                 return userController.handleUpdateUser(request);
             }
         }
-        if (request.getMethod() == Method.GET && "/stats".equals(request.getPath())) {
+        if (request.getMethod() == Method.GET && "/stats".equals(request.getPath()))
+        {
             return gameController.handleGetStats(request);
+        }
+        if (request.getMethod() == Method.GET && "/scoreboard".equals(request.getPath()))
+        {
+            return gameController.handleGetScoreboard(request);
         }
 
         // Wenn keine passende Route gefunden wird, senden Sie eine 404-Antwort zurück

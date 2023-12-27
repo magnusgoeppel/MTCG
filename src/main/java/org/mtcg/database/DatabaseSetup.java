@@ -69,7 +69,7 @@ public class DatabaseSetup
                                       "user_id INT REFERENCES users(id)," +
                                       "elo INT DEFAULT 0," +
                                       "wins INT DEFAULT 0," +
-                                      "losses INT DEFAULT 0," +
+                                      "losses INT DEFAULT 0" +
                                       ")";
             stmt.execute(createStatsTable);
 
