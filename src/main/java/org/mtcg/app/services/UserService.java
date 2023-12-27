@@ -106,4 +106,56 @@ public class UserService
             return false;
         }
     }
+
+    // Extrahieren Sie die Benutzerdaten (Name, Bio, Image)
+    public String getUserData(int userId)
+    {
+        try
+        {
+            String query = "SELECT name, bio, image FROM users WHERE id = ?";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setInt(1, userId);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next())
+            {
+                String name = rs.getString("name");
+                String bio = rs.getString("bio");
+                String image = rs.getString("image");
+
+                return "{\"Name\":\"" + name + "\",\"Bio\":\"" + bio + "\",\"Image\":\"" + image + "\"}";
+            }
+            else
+            {
+                return null;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // Aktualisieren Sie die Benutzerdaten (Name, Bio, Image)
+    public boolean updateUser(int userId, String name, String bio, String image)
+    {
+        try
+        {
+            String query = "UPDATE users SET name = ?, bio = ?, image = ? WHERE id = ?";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, name);
+            stmt.setString(2, bio);
+            stmt.setString(3, image);
+            stmt.setInt(4, userId);
+
+            int result = stmt.executeUpdate();
+            return result > 0;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

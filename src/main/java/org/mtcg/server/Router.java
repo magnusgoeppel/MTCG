@@ -35,9 +35,13 @@ public class Router
 
             return new Response(HttpStatus.OK, ContentType.HTML, welcomeMessage);
         }
-        if (request.getMethod() == Method.POST && "/users".equals(request.getPath()))
+        if ("/users".equals(request.getPath()))
         {
-            return userController.handleRegister(request);
+            if(request.getMethod() == Method.POST)
+            {
+                return userController.handleRegister(request);
+            }
+
         }
 
         if (request.getMethod() == Method.POST && "/sessions".equals(request.getPath()))
@@ -64,6 +68,17 @@ public class Router
         if (request.getMethod() == Method.PUT && "/deck".equals(request.getPath()))
         {
             return cardsController.handleConfigureDeck(request);
+        }
+        if (request.getPath().matches("^/users/[a-zA-Z]+$"))
+        {
+            if (request.getMethod() == Method.GET)
+            {
+                return userController.handleGetUser(request);
+            }
+            else if (request.getMethod() == Method.PUT)
+            {
+                return userController.handleUpdateUser(request);
+            }
         }
 
         // Wenn keine passende Route gefunden wird, senden Sie eine 404-Antwort zurück
