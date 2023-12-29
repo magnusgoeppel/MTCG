@@ -13,7 +13,7 @@ public class Card
     @JsonProperty("Name")
     private String name;
     @JsonProperty("Damage")
-    private double damage;
+    private int damage;
 
 
     public Card()
@@ -22,7 +22,7 @@ public class Card
 
 
 
-    public Card(String id, String name, double damage)
+    public Card(String id, String name, int damage)
     {
         this.id = id;
         this.name = name;

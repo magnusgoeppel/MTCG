@@ -142,10 +142,6 @@ public class CardsController
             {
                 return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "The provided deck contains invalid cards");
             }
-
-
-
-
             boolean success = cardsService.configureDeckForUser(userId, cardIds);
 
             if (success)

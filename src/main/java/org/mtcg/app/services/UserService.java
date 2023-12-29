@@ -43,11 +43,20 @@ public class UserService
                 int userResult = insertUserStmt.executeUpdate();
                 if (userResult == 1)
                 {
-                    // Rufe Methode zum Stats erstellen auf
-                    boolean statsCreated = createStats(username);
-                    boolean userAddedToScoreboard = addUserToScoreboard(username);
+                    // Get user_id
+                    int userId = getUserId(username);
 
-                    if(!statsCreated)
+                    if(userId == -1)
+                    {
+                        connection.rollback();
+                        return false;
+                    }
+
+                    // Rufe Methode zum Stats erstellen auf
+                    boolean statsCreated = createStats(userId);
+                    boolean userAddedToScoreboard = addUserToScoreboard(userId);
+
+                    if(!statsCreated || !userAddedToScoreboard)
                     {
                         connection.rollback();
                         return false;
@@ -174,13 +183,13 @@ public class UserService
     }
 
     // Erstellen Sie die Stats für einen Benutzer
-    public boolean createStats(String user_id)
+    public boolean createStats(int user_id)
     {
         try
         {
-            String query = "INSERT INTO stats (user_id, elo, wins, losses) VALUES (?, 0, 0, 0)";
+            String query = "INSERT INTO stats (user_id, elo, wins, losses) VALUES (?, 100, 0, 0)";
             PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setString(1, user_id);
+            stmt.setInt(1, user_id);
 
             int result = stmt.executeUpdate();
             return result > 0;
@@ -193,13 +202,13 @@ public class UserService
     }
 
     // Fügen Sie einen Benutzer zum Scoreboard hinzu
-    public boolean addUserToScoreboard(String user_id)
+    public boolean addUserToScoreboard(int user_id)
     {
         try
         {
             String query = "INSERT INTO scoreboards (user_id, score) VALUES (?, 0)";
             PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setString(1, user_id);
+            stmt.setInt(1, user_id);
 
             int result = stmt.executeUpdate();
             return result > 0;
@@ -208,6 +217,31 @@ public class UserService
         {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private int getUserId(String username)
+    {
+        try
+        {
+            String query = "SELECT id FROM users WHERE username = ?";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, username);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next())
+            {
+                return rs.getInt("id");
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return -1;
         }
     }
 }

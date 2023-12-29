@@ -36,7 +36,7 @@ public class CardsService
             {
                 Card card = new Card(rs.getString("id"),
                                      rs.getString("name"),
-                                     rs.getDouble("damage"));
+                                     rs.getInt("damage"));
                 cards.add(card);
             }
         }
@@ -58,7 +58,7 @@ public class CardsService
             {
                 Card card = new Card(rs.getString("id"),
                         rs.getString("name"),
-                        rs.getDouble("damage"));
+                        rs.getInt("damage"));
                 deck.add(card);
             }
         }

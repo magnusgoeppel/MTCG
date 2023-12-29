@@ -38,15 +38,10 @@ public class Router
 
             return new Response(HttpStatus.OK, ContentType.HTML, welcomeMessage);
         }
-        if ("/users".equals(request.getPath()))
+        if (request.getMethod() == Method.POST && "/users".equals(request.getPath()))
         {
-            if(request.getMethod() == Method.POST)
-            {
-                return userController.handleRegister(request);
-            }
-
+            return userController.handleRegister(request);
         }
-
         if (request.getMethod() == Method.POST && "/sessions".equals(request.getPath()))
         {
             return userController.handleLogin(request);
@@ -90,6 +85,10 @@ public class Router
         if (request.getMethod() == Method.GET && "/scoreboard".equals(request.getPath()))
         {
             return gameController.handleGetScoreboard(request);
+        }
+        if (request.getMethod() == Method.POST && "/battles".equals(request.getPath()))
+        {
+            return gameController.handleBattle(request);
         }
 
         // Wenn keine passende Route gefunden wird, senden Sie eine 404-Antwort zurück
