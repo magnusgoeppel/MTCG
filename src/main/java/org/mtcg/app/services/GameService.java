@@ -123,7 +123,9 @@ public class GameService
     }
 
     // Holle den Opponenten aus der Battles Tabelle (user_id2) wo user_id2 = null ist;
-    public int getOpponent(int userId) {
+    public int getOpponent(int userId)
+    {
+
         // SQL-Query, um einen verfügbaren Kampf zu finden, wo ein Spieler wartet
         String findOpponentQuery = "SELECT id, user2_id FROM battles WHERE user1_id IS NULL AND user2_id IS NOT NULL LIMIT 1";
 
@@ -139,6 +141,11 @@ public class GameService
             {
                 int battleId = rs.getInt("id");
                 int opponentId = rs.getInt("user2_id");
+
+                if(userId == opponentId)
+                {
+                    return 0;
+                }
 
                 // Füge den aktuellen Benutzer in den gefundenen Kampf ein
                 PreparedStatement updateStmt = connection.prepareStatement(updateBattleQuery);
@@ -195,7 +202,7 @@ public class GameService
         int battleId = getBattleId(userId, opponentId);
         boolean noSpecialCase = true;
 
-        battleLog.append("Battle Id: ").append(battleId).append(username).append(" vs. ").append(opponentname).append("\n");
+        battleLog.append("Battle ").append(battleId).append(": ").append(username).append(" vs ").append(opponentname).append("\n");
 
         // Hole das Deck aus der DB
         List<String> userDeck = getDeck(userId);
@@ -703,7 +710,7 @@ public class GameService
                 updatePlaceStmt.setInt(2, userId);
                 updatePlaceStmt.executeUpdate();
 
-                place++; // Gehen Sie zum nächsten Platz über
+                ++place; // Gehen Sie zum nächsten Platz über
             }
 
             // Commit der Transaktion

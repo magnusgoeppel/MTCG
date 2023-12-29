@@ -91,11 +91,16 @@ public class GameController
 
         int opponentId = gameService.getOpponent(userId);
 
+
         if(opponentId > 0)
         {
             String battleLog = gameService.Battle(userId, opponentId);
 
             return new Response(HttpStatus.OK, ContentType.TEXT, battleLog);
+        }
+        if(opponentId == 0)
+        {
+            return new Response(HttpStatus.OK, ContentType.TEXT, "User cant battle himself");
         }
         else
         {
