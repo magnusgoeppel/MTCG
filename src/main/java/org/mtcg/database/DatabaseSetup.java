@@ -102,8 +102,8 @@ public class DatabaseSetup
             // Scoreboard table
             String createScoreboardTable = "CREATE TABLE IF NOT EXISTS scoreboards (" +
                                            "id SERIAL PRIMARY KEY," +
-                                           "user_id INT REFERENCES users(id)," +
-                                           "score INT" +
+                                           "place INT," +
+                                           "user_id INT REFERENCES users(id)" +
                                            ")";
             stmt.execute(createScoreboardTable);
 

@@ -79,29 +79,31 @@ public class GameService
     {
         List<Stats> scoreboard = new ArrayList<>();
         // Verbinden Sie sich mit der Datenbank und führen Sie eine Abfrage aus
-        try (Connection connection = DatabaseConnection.getConnection()) {
-            String query = "SELECT elo, wins, losses, username FROM stats INNER JOIN users ON stats.user_id = users.id ORDER BY elo DESC";
-            try (PreparedStatement stmt = connection.prepareStatement(query)) {
-                ResultSet rs = stmt.executeQuery();
+        try (Connection connection = DatabaseConnection.getConnection())
+        {
+            String query = "SELECT u.username, s.* " +
+                    "FROM users u " +
+                    "JOIN stats s ON u.id = s.user_id " +
+                    "JOIN scoreboards sc ON u.id = sc.user_id " +
+                    "ORDER BY sc.place ASC";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            ResultSet rs = stmt.executeQuery();
 
-                while (rs.next())
-                {
-                    // Extrahieren Sie die Werte aus dem ResultSet
-                    String name = rs.getString("username");
-                    int elo = rs.getInt("elo");
-                    int wins = rs.getInt("wins");
-                    int losses = rs.getInt("losses");
+            // Iterieren Sie über die Ergebnisse und erstellen Sie für jeden Eintrag ein Stats-Objekt
+            while (rs.next())
+            {
+                String username = rs.getString("username");
+                int elo = rs.getInt("elo");
+                int wins = rs.getInt("wins");
+                int losses = rs.getInt("losses");
 
-                    // Erstellen Sie ein neues Stats-Objekt mit den extrahierten Werten
-                    Stats stats = new Stats(elo, wins, losses, name);
-
-                    // Fügen Sie das Stats-Objekt zur Scoreboard-Liste hinzu
-                    scoreboard.add(stats);
-                }
+                scoreboard.add(new Stats(elo, wins, losses, username));
             }
-        } catch (SQLException e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
-            // Behandeln Sie den Fehler angemessen
+            return null;
         }
         return scoreboard;
     }
@@ -434,6 +436,7 @@ public class GameService
         }
         // Speichern Sie das Battle-Log in der DB
         saveBattleLog(battleId, battleLog.toString());
+        updateScoreboard();
 
         return battleLog.toString();
     }
@@ -545,6 +548,15 @@ public class GameService
         userStats.setWins(userStats.getWins() + 1);
         opponentStats.setElo(opponentStats.getElo() - 5);
         opponentStats.setLosses(opponentStats.getLosses() + 1);
+
+        if(userStats.getElo() < 0)
+        {
+            userStats.setElo(0);
+        }
+        if(opponentStats.getElo() < 0)
+        {
+            opponentStats.setElo(0);
+        }
 
         // Speichern Sie die Stats in der DB
         saveStatsToDB(userId, userStats);
@@ -667,4 +679,55 @@ public class GameService
             e.printStackTrace();
         }
     }
+
+    private void updateScoreboard() {
+        try {
+            // Beginnen Sie eine Transaktion
+            connection.setAutoCommit(false);
+
+            // Holen Sie sich die sortierte Liste der Benutzer nach ELO
+            String getSortedUsersQuery = "SELECT user_id FROM stats ORDER BY elo DESC";
+            PreparedStatement getSortedUsersStmt = connection.prepareStatement(getSortedUsersQuery);
+            ResultSet sortedUsers = getSortedUsersStmt.executeQuery();
+
+            // Aktualisieren Sie die Platzierungen für jeden Benutzer
+            int place = 1; // Starten Sie die Platzierung bei 1
+            while (sortedUsers.next())
+            {
+                int userId = sortedUsers.getInt("user_id");
+
+                // Aktualisieren den Platz des Benutzers im Scoreboard
+                String updatePlaceQuery = "UPDATE scoreboards SET place = ? WHERE user_id = ?";
+                PreparedStatement updatePlaceStmt = connection.prepareStatement(updatePlaceQuery);
+                updatePlaceStmt.setInt(1, place);
+                updatePlaceStmt.setInt(2, userId);
+                updatePlaceStmt.executeUpdate();
+
+                place++; // Gehen Sie zum nächsten Platz über
+            }
+
+            // Commit der Transaktion
+            connection.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                // Im Fehlerfall die Transaktion zurückrollen
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        } finally {
+            try {
+                // Stellen Sie sicher, dass AutoCommit wieder aktiviert ist
+                if (connection != null) {
+                    connection.setAutoCommit(true);
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
 }

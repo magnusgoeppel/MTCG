@@ -17,16 +17,20 @@ public class UserService
     }
 
     // Registrieren eines Benutzers
-    public boolean registerUser(String username, String password) {
-        try {
+    public boolean registerUser(String username, String password)
+    {
+        try
+        {
             connection.setAutoCommit(false);
 
             // Erstelle ein neues Deck und erhalte die ID
             String insertDeckQuery = "INSERT INTO decks DEFAULT VALUES RETURNING id";
             int deckId;
-            try (PreparedStatement insertDeckStmt = connection.prepareStatement(insertDeckQuery)) {
+            try (PreparedStatement insertDeckStmt = connection.prepareStatement(insertDeckQuery))
+            {
                 ResultSet deckRs = insertDeckStmt.executeQuery();
-                if (!deckRs.next()) {
+                if (!deckRs.next())
+                {
                     connection.rollback();
                     return false;
                 }
@@ -64,7 +68,9 @@ public class UserService
 
                     connection.commit();
                     return true; // Benutzer erfolgreich registriert
-                } else {
+                }
+                else
+                {
                     connection.rollback();
                     return false; // Fehler beim Einfügen des Benutzers
                 }
@@ -206,7 +212,7 @@ public class UserService
     {
         try
         {
-            String query = "INSERT INTO scoreboards (user_id, score) VALUES (?, 0)";
+            String query = "INSERT INTO scoreboards (user_id, place) VALUES (?, 1)";
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setInt(1, user_id);
 

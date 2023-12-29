@@ -23,11 +23,7 @@ public class DatabaseConnection
             connection = DriverManager.getConnection(DB_URL, USER, PASS);
 
         }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-        catch (ClassNotFoundException e)
+        catch (SQLException | ClassNotFoundException e)
         {
             e.printStackTrace();
         }
