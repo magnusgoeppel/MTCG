@@ -23,30 +23,5 @@ public class User
         this.token = token;
         this.deck = deck;
     }
-
-    public void login()
-    {
-
-    }
-
-    public void editProfile()
-    {
-
-    }
-
-    public void viewStats()
-    {
-
-    }
-
-    public void updateELO(boolean win)
-    {
-
-    }
-
-    public boolean checkToken(String token)
-    {
-        return false;
-    }
 }
 

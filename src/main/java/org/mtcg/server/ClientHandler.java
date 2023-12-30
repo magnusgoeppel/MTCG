@@ -87,6 +87,7 @@ public class ClientHandler implements Runnable
                 }
             }
 
+
             // Liest den Request-Body
             char[] bodyChars = new char[contentLength];
             in.read(bodyChars, 0, contentLength);

@@ -43,10 +43,15 @@ public class CardsService
         return cards;
     }
 
-    public List<Card> getDeckForUser(int userId) throws SQLException
+    public List<Card> getDeckForUser(int userId)
     {
         List<Card> deck = new ArrayList<>();
-        String query = "SELECT * FROM cards WHERE id IN (SELECT card_id FROM deck_cards WHERE deck_id = (SELECT deck_id FROM users WHERE id = ?))";
+        // Aktualisierte Abfrage, die überprüft, ob die Karte nicht in einem Handel beteiligt ist
+        String query = "SELECT c.* FROM cards c " +
+                "JOIN deck_cards dc ON c.id = dc.card_id " +
+                "LEFT JOIN trades t ON c.id = t.offered_card_id " +
+                "WHERE dc.deck_id = (SELECT deck_id FROM users WHERE id = ?) " +
+                "AND t.offered_card_id IS NULL";  // Stellt sicher, dass die Karte nicht im Handel angeboten wird
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query))
@@ -62,8 +67,13 @@ public class CardsService
                 deck.add(card);
             }
         }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
         return deck;
     }
+
 
     public List<String> extractCardIdsFromRequestBody(String requestBody)
     {

@@ -92,9 +92,10 @@ public class DatabaseSetup
 
             // Trade table
             String createTradeTable = "CREATE TABLE IF NOT EXISTS trades (" +
-                                      "id SERIAL PRIMARY KEY," +
+                                      "id VARCHAR(255) PRIMARY KEY," +
                                       "offered_card_id VARCHAR(255) REFERENCES cards(id)," +
-                                      "required_card_id VARCHAR(255) REFERENCES cards(id)," +
+                                      "type VARCHAR(255)," +
+                                      "minimum_damage INT," +
                                       "user_id INT REFERENCES users(id)" +
                                       ")";
             stmt.execute(createTradeTable);

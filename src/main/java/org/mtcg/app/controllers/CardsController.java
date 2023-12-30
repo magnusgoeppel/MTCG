@@ -73,37 +73,28 @@ public class CardsController
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
-        try
+        List<Card>deck = cardsService.getDeckForUser(userId);
+
+        String response;
+        ContentType responseType;
+
+        if("plain".equals(format))
         {
-            List<Card>deck = cardsService.getDeckForUser(userId);
-
-            String response;
-            ContentType responseType;
-
-            if("plain".equals(format))
-            {
-                responseType = ContentType.TEXT;
-                response = cardsService.convertDeckToPlain(deck);
-            }
-            else
-            {
-                response = cardsService.convertToJson(deck);
-                responseType = ContentType.JSON;
-            }
-
-            // Wenn das Deck leer ist, wird eine 204-Antwort zurückgegeben
-            if (deck.isEmpty())
-            {
-                return new Response(HttpStatus.NO_CONTENT, responseType, response);
-            }
-
-            return new Response(HttpStatus.OK, responseType, response);
+            responseType = ContentType.TEXT;
+            response = cardsService.convertDeckToPlain(deck);
         }
-        catch (SQLException e)
+        else
         {
-            e.printStackTrace();
-            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Internal server error");
+            response = cardsService.convertToJson(deck);
+            responseType = ContentType.JSON;
         }
+
+        // Wenn das Deck leer ist, wird eine 204-Antwort zurückgegeben
+        if (deck.isEmpty())
+        {
+            return new Response(HttpStatus.NO_CONTENT, responseType, response);
+        }
+        return new Response(HttpStatus.OK, responseType, response);
     }
 
     public Response handleConfigureDeck(Request request)

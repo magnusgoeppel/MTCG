@@ -22,6 +22,8 @@ public class UserController
     public Response handleRegister(Request request)
     {
         JSONObject json = new JSONObject(request.getBody());
+
+
         String username = json.getString("Username");
         String password = json.getString("Password");
 

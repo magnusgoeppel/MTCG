@@ -4,6 +4,7 @@ import org.mtcg.app.controllers.PackageController;
 import org.mtcg.app.controllers.UserController;
 import org.mtcg.app.controllers.CardsController;
 import org.mtcg.app.controllers.GameController;
+import org.mtcg.app.controllers.TradingController;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.http.Method;
@@ -16,6 +17,7 @@ public class Router
     private final PackageController packageController;
     private final CardsController cardsController;
     private final GameController gameController;
+    private final TradingController tradingController;
 
 
     // Konstruktor für die Router-Klasse
@@ -25,6 +27,7 @@ public class Router
         this.packageController = new PackageController();
         this.cardsController = new CardsController();
         this.gameController = new GameController();
+        this.tradingController = new TradingController();
 
     }
 
@@ -89,6 +92,22 @@ public class Router
         if (request.getMethod() == Method.POST && "/battles".equals(request.getPath()))
         {
             return gameController.handleBattle(request);
+        }
+        if (request.getMethod() == Method.GET && "/tradings".equals(request.getPath()))
+        {
+            return tradingController.handleGetTradingDeals(request);
+        }
+        if (request.getMethod() == Method.POST && "/tradings".equals(request.getPath()))
+        {
+            return tradingController.handleCreateTradingDeal(request);
+        }
+        if (request.getMethod() == Method.DELETE && request.getPath().startsWith("/tradings/"))
+        {
+            return tradingController.handleDeleteTradingDeal(request);
+        }
+        if (request.getMethod() == Method.POST && request.getPath().startsWith("/tradings/"))
+        {
+            //return tradingController.handleExecuteTrade(request);
         }
 
         // Wenn keine passende Route gefunden wird, senden Sie eine 404-Antwort zurück
