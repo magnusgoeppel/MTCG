@@ -107,7 +107,7 @@ public class Router
         }
         if (request.getMethod() == Method.POST && request.getPath().startsWith("/tradings/"))
         {
-            //return tradingController.handleExecuteTrade(request);
+            return tradingController.handleExecuteTrade(request);
         }
 
         // Wenn keine passende Route gefunden wird, senden Sie eine 404-Antwort zurück
