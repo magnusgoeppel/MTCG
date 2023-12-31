@@ -1,13 +1,13 @@
 package org.mtcg.app.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonPropertyOrder({ "Id", "Name", "Damage"})
 @Getter
 @Setter
+@JsonPropertyOrder({ "Id", "Name", "Damage"})
 public class Card
 {
     @JsonProperty("Id")
@@ -17,12 +17,7 @@ public class Card
     @JsonProperty("Damage")
     private int damage;
 
-
-    public Card()
-    {
-    }
-
-
+    public Card() {}
 
     public Card(String id, String name, int damage)
     {
@@ -31,4 +26,3 @@ public class Card
         this.damage = damage;
     }
 }
-

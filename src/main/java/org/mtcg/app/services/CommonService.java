@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mtcg.app.models.Card;
 import org.mtcg.database.DatabaseConnection;
+import org.mtcg.server.Request;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -12,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class CommonService
 {
@@ -22,10 +24,13 @@ public class CommonService
         this.connection = DatabaseConnection.getConnection();
     }
 
-    public int extractUserIdFromAuthHeader(String authHeader) throws Exception
+    public int extractUserIdFromAuthHeader(Request request)
     {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new Exception("Unauthorized: No token provided");
+        String authHeader = request.getHeaders().get("Authorization");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer "))
+        {
+            return -1;
         }
 
         String token = authHeader.substring(7); // Entfernen von "Bearer "
@@ -38,7 +43,7 @@ public class CommonService
         }
         catch (Exception e)
         {
-            throw new Exception("Unauthorized: Invalid token");
+           return -1;
         }
         return userId;
     }

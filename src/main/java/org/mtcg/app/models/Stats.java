@@ -1,12 +1,12 @@
 package org.mtcg.app.models;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonPropertyOrder({ "Username", "Elo", "Wins", "Losses"})
 @Getter
 @Setter
+@JsonPropertyOrder({ "Username", "Elo", "Wins", "Losses"})
 public class Stats
 {
     private String username;

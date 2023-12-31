@@ -10,6 +10,7 @@ public enum ContentType
     TEXT("text/plain"),
     JSON("application/json");
 
+    // Content-Type als String
     private final String contentType;
 
     // Konstruktor für die Content-Types

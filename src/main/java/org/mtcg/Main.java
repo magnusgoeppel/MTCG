@@ -10,7 +10,7 @@ public class Main
         // Erstellt die Tabellen in der Datenbank (wenn sie noch nicht existieren)
         DatabaseSetup.createTables();
 
-        // Startet den Server
+        // Erstellt einen Server und startet ihn
         Server server = new Server();
         server.start();
     }

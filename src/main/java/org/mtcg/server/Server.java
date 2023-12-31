@@ -1,7 +1,6 @@
 package org.mtcg.server;
 
 import lombok.Getter;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;

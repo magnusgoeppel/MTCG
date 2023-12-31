@@ -10,26 +10,31 @@ import org.mtcg.server.Response;
 
 public class UserController
 {
+    // Variablen für die Services
     private UserService userService;
     private CommonService commonService;
 
+    // Konstruktor der Klasse UserController
     public UserController()
     {
         this.userService = new UserService();
         this.commonService = new CommonService();
     }
 
+
+    // Registrieren eines Benutzers
     public Response handleRegister(Request request)
     {
+        // Extrahieren der Benutzerdaten aus dem Request
         JSONObject json = new JSONObject(request.getBody());
-
 
         String username = json.getString("Username");
         String password = json.getString("Password");
 
-
+        // Registriere den Benutzer
         boolean success = userService.registerUser(username, password);
 
+        // Gebe zurück, ob die Registrierung erfolgreich war
         if (success)
         {
             return new Response(HttpStatus.CREATED, ContentType.JSON, "User registered successfully");
@@ -42,15 +47,20 @@ public class UserController
 
     public Response handleLogin(Request request)
     {
+        // Extrahieren der Benutzerdaten aus dem Request
         JSONObject json = new JSONObject(request.getBody());
+
         String username = json.getString("Username");
         String password = json.getString("Password");
 
+        // Überprüfen der Benutzerdaten
         boolean validCredentials = userService.loginUser(username, password);
 
+        // Speichern des Tokens für den Benutzer
         String token = username + "-mtcgToken";
         boolean tokenSaved = userService.saveUserToken(username, token);
 
+        // Gebe zurück, ob die Anmeldung erfolgreich war
         if (validCredentials && tokenSaved)
         {
             return new Response(HttpStatus.OK, ContentType.JSON, "User logged in successfully");
@@ -62,14 +72,14 @@ public class UserController
         }
     }
 
+    // UserData ausgeben (Name, Bio, Image)
     public Response handleGetUser(Request request)
     {
-        // Extrahieren des Authorization-Headers
-        String authHeader = request.getHeaders().get("Authorization");
-
+        // Extrahieren die userId aus dem Token
         int userId;
-        try {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+        try
+        {
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
@@ -83,7 +93,7 @@ public class UserController
         // Extrahieren des Tokens und Entfernen des "-mtcgToken" Teils
         String token = request.getHeaders().get("Authorization").substring(7, request.getHeaders().get("Authorization").length() - 10);
 
-        //check if username and token match
+        // Überprüfen, ob Username und Token übereinstimmen
         if(!username.equals(token))
         {
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
@@ -92,22 +102,23 @@ public class UserController
         // Extrahieren Sie die Benutzerdaten
         String userData = userService.getUserData(userId);
 
+        // Wenn keine Benutzerdaten gefunden wurden, geben Sie eine Fehlermeldung zurück
         if(userData == null)
         {
             return new Response(HttpStatus.NOT_FOUND, ContentType.JSON, "User not found");
         }
+        // Ansonsten geben Sie die Benutzerdaten zurück
         return new Response(HttpStatus.OK, ContentType.JSON, userData);
     }
 
+    // UserData aktualisieren (Name, Bio, Image)
     public Response handleUpdateUser(Request request)
     {
-        // Extrahieren des Authorization-Headers
-        String authHeader = request.getHeaders().get("Authorization");
-
+        // Extrahieren die userId aus dem Token
         int userId;
-        try {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
-
+        try
+        {
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
@@ -121,7 +132,7 @@ public class UserController
         // Extrahieren des Tokens und Entfernen des "-mtcgToken" Teils
         String token = request.getHeaders().get("Authorization").substring(7, request.getHeaders().get("Authorization").length() - 10);
 
-        //check if username and token match
+        // Überprüfen, ob Username und Token übereinstimmen
         if(!username.equals(token))
         {
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
@@ -134,6 +145,7 @@ public class UserController
 
         boolean success = userService.updateUser(userId, name, bio, image);
 
+        // Gebe zurück, ob die Aktualisierung erfolgreich war
         if (success)
         {
             return new Response(HttpStatus.OK, ContentType.JSON, "User updated successfully");

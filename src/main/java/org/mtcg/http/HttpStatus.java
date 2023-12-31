@@ -16,6 +16,7 @@ public enum HttpStatus
     CONFLICT(409, "CONFLICT"),
     INTERNAL_SERVER_ERROR(500, "INTERNAL SERVER ERROR");
 
+    // Variablen für die HTTP-Status-Codes
     private final int code;
     private final String message;
 

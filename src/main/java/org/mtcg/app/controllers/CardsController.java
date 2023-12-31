@@ -30,7 +30,7 @@ public class CardsController
         int userId;
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
@@ -65,7 +65,7 @@ public class CardsController
         int userId;
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
@@ -105,7 +105,7 @@ public class CardsController
 
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {

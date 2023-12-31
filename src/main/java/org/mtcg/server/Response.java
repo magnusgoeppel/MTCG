@@ -1,10 +1,10 @@
 package org.mtcg.server;
 
-import org.mtcg.http.ContentType;
-import org.mtcg.http.HttpStatus;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.AccessLevel;
+import org.mtcg.http.ContentType;
+import org.mtcg.http.HttpStatus;
 
 @Getter(AccessLevel.PRIVATE)
 @Setter(AccessLevel.PRIVATE)

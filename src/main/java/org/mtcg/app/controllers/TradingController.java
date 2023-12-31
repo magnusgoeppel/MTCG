@@ -27,15 +27,14 @@ public class TradingController
 
     public Response handleGetTradingDeals(Request request)
     {
-        String authHeader = request.getHeaders().get("Authorization");
-
         int userId;
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
@@ -62,10 +61,11 @@ public class TradingController
         int userId;
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
@@ -94,10 +94,11 @@ public class TradingController
         int userId;
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
@@ -137,10 +138,11 @@ public class TradingController
         int userId;
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 

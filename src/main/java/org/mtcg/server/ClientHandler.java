@@ -28,10 +28,10 @@ public class ClientHandler implements Runnable
     @Override
     public void run()
     {
+        // Erstellt einen BufferedReader zum Lesen der HTTP-Request-Zeilen
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              OutputStream out = clientSocket.getOutputStream())
         {
-
             // Variablen für die HTTP-Request-Parameter
             String line;
             String requestMethod = null;
@@ -69,7 +69,8 @@ public class ClientHandler implements Runnable
                 }
             }
 
-            // extrahiert die Query-Parameter (?format=plain)
+            // TODO: Vielleicht entfernen
+            // Liest die Query-Parameter und speichert sie in einer Map
             Map<String, String> queryParams = new HashMap<>();
 
             if (requestPath.contains("?"))
@@ -87,7 +88,6 @@ public class ClientHandler implements Runnable
                 }
             }
 
-
             // Liest den Request-Body
             char[] bodyChars = new char[contentLength];
             in.read(bodyChars, 0, contentLength);
@@ -98,7 +98,9 @@ public class ClientHandler implements Runnable
 
             // Verwenden Sie den Router, um die Anfrage zu verarbeiten und eine Antwort zu erhalten
             Response response = router.route(request);
+            // Baut die HTTP-Antwort
             String httpResponse = response.build();
+            // Sendet die HTTP-Antwort
             out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
             // Stellt sicher, dass die Antwort gesendet wird, bevor Sie fortfahren
             out.flush();

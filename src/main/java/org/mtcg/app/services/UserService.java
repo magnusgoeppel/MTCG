@@ -1,6 +1,8 @@
 package org.mtcg.app.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
+import org.mtcg.app.models.UserData;
 import org.mtcg.database.DatabaseConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,18 +38,24 @@ public class UserService
                 }
                 deckId = deckRs.getInt(1);
             }
+            catch (SQLException e)
+            {
+                connection.rollback();
+                return false;
+            }
 
             // Füge den neuen Benutzer in die users Tabelle ein und setze die deck_id
             String insertUserQuery = "INSERT INTO users (username, password, coins, deck_id) VALUES (?, ?, 20, ?)";
             try (PreparedStatement insertUserStmt = connection.prepareStatement(insertUserQuery)) {
                 insertUserStmt.setString(1, username);
                 insertUserStmt.setString(2, password);
-                insertUserStmt.setInt(3, deckId); // Setze die deck_id auf die ID des neu erstellten Decks
+                insertUserStmt.setInt(3, deckId);
 
                 int userResult = insertUserStmt.executeUpdate();
+
                 if (userResult == 1)
                 {
-                    // Get user_id
+                    // Hole die ID des Benutzers
                     int userId = getUserId(username);
 
                     if(userId == -1)
@@ -67,29 +75,26 @@ public class UserService
                     }
 
                     connection.commit();
-                    return true; // Benutzer erfolgreich registriert
+                    return true;
                 }
                 else
                 {
                     connection.rollback();
-                    return false; // Fehler beim Einfügen des Benutzers
+                    return false;
                 }
             }
-        } catch (Exception e) {
-            try {
+            catch (SQLException e)
+            {
                 connection.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                connection.setAutoCommit(true);
-            } catch (SQLException e) {
-                e.printStackTrace();
+                return false;
             }
         }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+
     }
 
     // Anmelden eines Benutzers
@@ -105,6 +110,7 @@ public class UserService
 
             // Führe die SQL-Abfrage aus
             ResultSet rs = stmt.executeQuery();
+
             return rs.next();
         }
         catch (Exception e)
@@ -146,12 +152,14 @@ public class UserService
             ResultSet rs = stmt.executeQuery();
             if (rs.next())
             {
-                JSONObject userData = new JSONObject();
-                userData.put("Name", rs.getString("name"));
-                userData.put("Bio", rs.getString("bio"));
-                userData.put("Image", rs.getString("image"));
+                UserData userData = new UserData();
+                userData.setName(rs.getString("name"));
+                userData.setBio(rs.getString("bio"));
+                userData.setImage(rs.getString("image"));
 
-                return userData.toString();
+                // Verwenden Sie Jackson, um das Objekt in einen JSON-String umzuwandeln
+                ObjectMapper mapper = new ObjectMapper();
+                return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(userData);
             }
 
             else
@@ -185,6 +193,33 @@ public class UserService
         {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    // ------------------------------ Hilfsfunktionen ------------------------------
+
+    private int getUserId(String username)
+    {
+        try
+        {
+            String query = "SELECT id FROM users WHERE username = ?";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, username);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next())
+            {
+                return rs.getInt("id");
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return -1;
         }
     }
 
@@ -223,31 +258,6 @@ public class UserService
         {
             e.printStackTrace();
             return false;
-        }
-    }
-
-    private int getUserId(String username)
-    {
-        try
-        {
-            String query = "SELECT id FROM users WHERE username = ?";
-            PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setString(1, username);
-
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next())
-            {
-                return rs.getInt("id");
-            }
-            else
-            {
-                return -1;
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return -1;
         }
     }
 }

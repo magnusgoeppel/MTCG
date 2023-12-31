@@ -9,7 +9,6 @@ import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.http.Method;
 
-
 public class Router
 {
     // Variablen für die Router-Klasse
@@ -70,7 +69,16 @@ public class Router
         {
             return cardsController.handleConfigureDeck(request);
         }
-        if (request.getPath().matches("^/users/[a-zA-Z]+$"))
+        // TODO: Anpassen der /users/{username}-Route
+        if(request.getMethod() == Method.GET && request.getPath().startsWith("/users/"))
+        {
+            return userController.handleGetUser(request);
+        }
+        if (request.getMethod() == Method.PUT && request.getPath().startsWith("/users/"))
+        {
+            return userController.handleUpdateUser(request);
+        }
+        /*if (request.getPath().matches("/users/[a-zA-Z]+$"))
         {
             if (request.getMethod() == Method.GET)
             {
@@ -80,7 +88,7 @@ public class Router
             {
                 return userController.handleUpdateUser(request);
             }
-        }
+        }*/
         if (request.getMethod() == Method.GET && "/stats".equals(request.getPath()))
         {
             return gameController.handleGetStats(request);
@@ -109,7 +117,6 @@ public class Router
         {
             return tradingController.handleExecuteTrade(request);
         }
-
         // Wenn keine passende Route gefunden wird, senden Sie eine 404-Antwort zurück
         return new Response(HttpStatus.NOT_FOUND, ContentType.HTML, "Not Found");
     }

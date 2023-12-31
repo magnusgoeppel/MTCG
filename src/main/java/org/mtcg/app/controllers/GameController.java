@@ -30,10 +30,11 @@ public class GameController
         int userId;
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
@@ -56,10 +57,11 @@ public class GameController
         int userId;
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
@@ -82,10 +84,11 @@ public class GameController
         int userId;
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 

@@ -1,9 +1,8 @@
 package org.mtcg.server;
 
-import org.mtcg.http.Method;
 import lombok.Getter;
+import org.mtcg.http.Method;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -15,6 +14,7 @@ public class Request
     private final String version;
     private final String body;
     private final Map<String, String> headers;
+    // TODO: Query-Parameter vielleicht entfernen
     private final Map<String, String> queryParams;
 
     // Konstruktor für die HTTP-Request-Parameter

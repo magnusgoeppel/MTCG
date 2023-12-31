@@ -59,6 +59,10 @@ public class PackageController
                     return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "An error occurred while creating the package");
                 }
             }
+            else if (packageService.getAdminToken() == null)
+            {
+                return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "An error occurred while creating the package");
+            }
             else
             {
                 return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "Provided user is not \"admin\"");
@@ -77,10 +81,11 @@ public class PackageController
         int userId;
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(authHeader);
+            userId = commonService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
