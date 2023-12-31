@@ -14,7 +14,6 @@ public class Request
     private final String version;
     private final String body;
     private final Map<String, String> headers;
-    // TODO: Query-Parameter vielleicht entfernen
     private final Map<String, String> queryParams;
 
     // Konstruktor für die HTTP-Request-Parameter

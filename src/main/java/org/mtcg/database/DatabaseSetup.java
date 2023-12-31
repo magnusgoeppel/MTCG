@@ -5,6 +5,7 @@ import java.sql.Statement;
 
 public class DatabaseSetup
 {
+    // Methode zum Erstellen der Tabellen in der Datenbank (wenn sie noch nicht existieren)
     public static void createTables()
     {
         // Verbindung zur Datenbank aufbauen

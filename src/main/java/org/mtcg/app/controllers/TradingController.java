@@ -2,27 +2,25 @@ package org.mtcg.app.controllers;
 
 import org.mtcg.app.models.Card;
 import org.mtcg.app.models.TradeOffer;
-import org.mtcg.app.services.CommonService;
-import org.mtcg.app.services.TradingServices;
+import org.mtcg.app.services.authService;
+import org.mtcg.app.services.TradingService;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.server.Request;
 import org.mtcg.server.Response;
 
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
 
 public class TradingController
 {
-    private TradingServices tradingService;
+    private TradingService tradingService;
 
-    private CommonService commonService;
+    private authService commonService;
 
     public TradingController()
     {
-        this.tradingService = new TradingServices();
-        this.commonService = new CommonService();
+        this.tradingService = new TradingService();
+        this.commonService = new authService();
     }
 
     public Response handleGetTradingDeals(Request request)

@@ -1,25 +1,18 @@
 package org.mtcg.app.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.mtcg.app.models.Card;
 import org.mtcg.database.DatabaseConnection;
 import org.mtcg.server.Request;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
-public class CommonService
+public class authService
 {
     private Connection connection;
 
-    public CommonService()
+    public authService()
     {
         this.connection = DatabaseConnection.getConnection();
     }

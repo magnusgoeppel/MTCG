@@ -2,47 +2,50 @@ package org.mtcg.app.controllers;
 
 import org.mtcg.app.models.Card;
 import org.mtcg.app.services.CardsService;
-import org.mtcg.app.services.CommonService;
+import org.mtcg.app.services.authService;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.server.Request;
 import org.mtcg.server.Response;
 import org.mtcg.http.ContentType;
-
-import java.sql.SQLException;
 import java.util.List;
 
 public class CardsController
 {
+    // Instanzen der Services
     private CardsService cardsService;
-    private CommonService commonService;
+    private authService authService;
 
     public CardsController()
     {
         this.cardsService = new CardsService();
-        this.commonService = new CommonService();
+        this.authService = new authService();
     }
 
+    // Abrufen der Karten eines Benutzers
     public Response handleGetCards(Request request)
     {
-        // Extrahieren des Authorization-Headers
-        String authHeader = request.getHeaders().get("Authorization");
-
+        // Extrahieren der Benutzerdaten aus dem Request
         int userId;
+
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(request);
+            userId = authService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
         try
         {
+            // Speichern der Karten des Benutzers
             List<Card> cards = cardsService.getCardsForUser(userId);
 
+            // Konvertieren der Karten in JSON
             String cardsJson = cardsService.convertToJson(cards);
 
+            // Gebe züruck, ob die Karten leer sind oder erfolgreich abgerufen wurden
             if (cards.isEmpty())
             {
                 return new Response(HttpStatus.NO_CONTENT, ContentType.JSON, cardsJson);
@@ -57,15 +60,18 @@ public class CardsController
         }
     }
 
+    // Abrufen des Decks eines Benutzers
     public Response handleGetDeck(Request request)
     {
-        String authHeader = request.getHeaders().get("Authorization");
+        // Extrahiere das Ausgabeformat aus dem Request
         String format = request.getQueryParams().get("format");
 
+        // Extrahiere die Benutzerdaten aus dem Request
         int userId;
+
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(request);
+            userId = authService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
@@ -73,8 +79,10 @@ public class CardsController
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
+        // Speichern des Decks des Benutzers
         List<Card>deck = cardsService.getDeckForUser(userId);
 
+        // Überprüfe, ob das Deck in Plain oder JSON konvertiert werden soll
         String response;
         ContentType responseType;
 
@@ -89,7 +97,7 @@ public class CardsController
             responseType = ContentType.JSON;
         }
 
-        // Wenn das Deck leer ist, wird eine 204-Antwort zurückgegeben
+        // Überprüfe, ob das Deck leer ist oder erfolgreich abgerufen wurde
         if (deck.isEmpty())
         {
             return new Response(HttpStatus.NO_CONTENT, responseType, response);
@@ -99,22 +107,22 @@ public class CardsController
 
     public Response handleConfigureDeck(Request request)
     {
-        String authHeader = request.getHeaders().get("Authorization");
-
+        // Extrahieren der Benutzerdaten aus dem Request
         int userId;
 
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(request);
+            userId = authService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
         try
         {
-            // Überprüfe die Anzahl der Karten im Deck
+            // Überprüfe, ob die Anzahl der Karten im Deck gültig ist
             boolean isDeckSizeValid = cardsService.isDeckSizeValid(request.getBody());
 
             if (!isDeckSizeValid)
@@ -133,6 +141,8 @@ public class CardsController
             {
                 return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "The provided deck contains invalid cards");
             }
+
+            // Überprüfen, ob das Deck erfolgreich konfiguriert wurde
             boolean success = cardsService.configureDeckForUser(userId, cardIds);
 
             if (success)

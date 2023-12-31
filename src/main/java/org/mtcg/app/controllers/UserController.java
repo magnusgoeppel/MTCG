@@ -2,7 +2,7 @@ package org.mtcg.app.controllers;
 
 import org.json.JSONObject;
 import org.mtcg.app.services.UserService;
-import org.mtcg.app.services.CommonService;
+import org.mtcg.app.services.authService;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.server.Request;
@@ -10,15 +10,15 @@ import org.mtcg.server.Response;
 
 public class UserController
 {
-    // Variablen für die Services
+    // Instanzen der Services
     private UserService userService;
-    private CommonService commonService;
+    private authService authService;
 
     // Konstruktor der Klasse UserController
     public UserController()
     {
         this.userService = new UserService();
-        this.commonService = new CommonService();
+        this.authService = new authService();
     }
 
 
@@ -77,9 +77,10 @@ public class UserController
     {
         // Extrahieren die userId aus dem Token
         int userId;
+
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(request);
+            userId = authService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
@@ -116,9 +117,10 @@ public class UserController
     {
         // Extrahieren die userId aus dem Token
         int userId;
+
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(request);
+            userId = authService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {

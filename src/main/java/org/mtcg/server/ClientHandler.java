@@ -68,8 +68,6 @@ public class ClientHandler implements Runnable
                     }
                 }
             }
-
-            // TODO: Vielleicht entfernen
             // Liest die Query-Parameter und speichert sie in einer Map
             Map<String, String> queryParams = new HashMap<>();
 

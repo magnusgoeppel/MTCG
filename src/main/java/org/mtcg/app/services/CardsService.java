@@ -2,6 +2,7 @@ package org.mtcg.app.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.mtcg.app.models.Card;
 import org.mtcg.database.DatabaseConnection;
 
@@ -14,6 +15,7 @@ import java.util.List;
 
 public class CardsService
 {
+    // Verbindung zur Datenbank
     private Connection connection;
 
     public CardsService()
@@ -21,13 +23,14 @@ public class CardsService
         this.connection = DatabaseConnection.getConnection();
     }
 
+    // Speicher der Karten des Benutzers
     public List<Card> getCardsForUser(int userId) throws SQLException
     {
         List<Card> cards = new ArrayList<>();
+
         String query = "SELECT * FROM cards WHERE id IN (SELECT card_id FROM user_cards WHERE user_id = ?)";
 
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query))
+        try (PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
@@ -43,18 +46,19 @@ public class CardsService
         return cards;
     }
 
+    // Speicher der Karten des Benutzers
     public List<Card> getDeckForUser(int userId)
     {
         List<Card> deck = new ArrayList<>();
-        // Aktualisierte Abfrage, die überprüft, ob die Karte nicht in einem Handel beteiligt ist
-        String query = "SELECT c.* FROM cards c " +
-                "JOIN deck_cards dc ON c.id = dc.card_id " +
-                "LEFT JOIN trades t ON c.id = t.offered_card_id " +
-                "WHERE dc.deck_id = (SELECT deck_id FROM users WHERE id = ?) " +
-                "AND t.offered_card_id IS NULL";  // Stellt sicher, dass die Karte nicht im Handel angeboten wird
 
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query))
+        String query = "SELECT c.* FROM cards c " +
+                       "JOIN deck_cards dc ON c.id = dc.card_id " +
+                       "LEFT JOIN trades t ON c.id = t.offered_card_id " +
+                       "WHERE dc.deck_id = (SELECT deck_id FROM users WHERE id = ?) " +
+                       // Stellt sicher, dass die Karte nicht als Trade angeboten wird
+                       "AND t.offered_card_id IS NULL";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
@@ -74,14 +78,14 @@ public class CardsService
         return deck;
     }
 
-
-    public List<String> extractCardIdsFromRequestBody(String requestBody)
+    // Konvertieren in JSON von Karten und Deck
+    public String convertToJson(List<Card> cards)
     {
         ObjectMapper mapper = new ObjectMapper();
+
         try
         {
-            List<String> cardIds = mapper.readValue(requestBody, new TypeReference<>(){});
-            return cardIds;
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(cards);
         }
         catch (Exception e)
         {
@@ -90,80 +94,21 @@ public class CardsService
         }
     }
 
-    public boolean configureDeckForUser(int userId, List<String> cardIds)
+    // Konvertieren das Deck in Plain
+    public String convertDeckToPlain(List<Card> deck)
     {
+        StringBuilder sb = new StringBuilder();
 
-        Connection connection = null;
-
-        try
+        for (Card card : deck)
         {
-            connection = DatabaseConnection.getConnection();
-            // Beginnen Sie eine Transaktion
-            connection.setAutoCommit(false);
-
-            // Löschen Sie zuerst alle aktuellen Karten im Deck des Benutzers
-            String deleteQuery = "DELETE FROM deck_cards WHERE deck_id = (SELECT deck_id FROM users WHERE id = ?)";
-            try (PreparedStatement deleteStmt = connection.prepareStatement(deleteQuery)) {
-                deleteStmt.setInt(1, userId);
-                deleteStmt.executeUpdate();
-            }
-
-            // Fügen Sie jede Karte zum Deck des Benutzers hinzu
-            String insertQuery = "INSERT INTO deck_cards (deck_id, card_id) VALUES ((SELECT deck_id FROM users WHERE id = ?), ?)";
-            try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
-                for (String cardId : cardIds) {
-                    insertStmt.setInt(1, userId);
-                    insertStmt.setString(2, cardId);
-                    insertStmt.executeUpdate();
-                }
-            }
-
-            // Commit der Transaktion
-            connection.commit();
-            return true; // Deck erfolgreich konfiguriert
-        } catch (SQLException e) {
-            e.printStackTrace();
-            // Rollback im Fehlerfall
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-            return false;
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.setAutoCommit(true);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+            sb.append(card.getId()).append(", ").append
+                    (card.getName()).append(", ").append
+                    (card.getDamage()).append("\n");
         }
+        return sb.toString();
     }
 
-    public boolean areCardsValidAndBelongToUser(int userId, List<String> cardIds) throws SQLException
-    {
-        // Erstellen Sie eine SQL-Abfrage, um zu überprüfen, ob alle Karten-IDs dem Benutzer gehören
-        // und in der Tabelle 'user_cards' oder einer ähnlichen Tabelle vorhanden sind.
-        String query = "SELECT COUNT(*) AS card_count FROM user_cards WHERE user_id = ? AND card_id IN (?, ?, ?, ?)";
-
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, userId);
-            for (int i = 0; i < cardIds.size(); i++) {
-                stmt.setString(i + 2, cardIds.get(i)); // Setzen der Karten-IDs in die Abfrage
-            }
-
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                int count = rs.getInt("card_count");
-                return count == cardIds.size(); // Überprüfen, ob die Anzahl der Karten, die dem Benutzer gehören, gleich der Anzahl der Karten im Deck ist
-            }
-        }
-        return false; // Standardmäßig false zurückgeben, wenn die Abfrage nicht erfolgreich war oder keine Karten gefunden wurden
-    }
-
+    // Überprüfen, ob die Anzahl der Karten im Deck gültig ist
     public boolean isDeckSizeValid(String requestBody)
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -179,13 +124,15 @@ public class CardsService
         }
     }
 
-
-    public String convertToJson(List<Card> cards)
+    // Extrahieren der Karten-IDs aus dem Request Body
+    public List<String> extractCardIdsFromRequestBody(String requestBody)
     {
         ObjectMapper mapper = new ObjectMapper();
+
         try
         {
-            return mapper.writeValueAsString(cards);
+            List<String> cardIds = mapper.readValue(requestBody, new TypeReference<>(){});
+            return cardIds;
         }
         catch (Exception e)
         {
@@ -194,14 +141,89 @@ public class CardsService
         }
     }
 
-    public String convertDeckToPlain(List<Card> deck)
+    // Überprüfen Sie, ob alle Karten dem Benutzer gehören und verfügbar sind
+    public boolean areCardsValidAndBelongToUser(int userId, List<String> cardIds)
     {
-        StringBuilder sb = new StringBuilder();
-        for (Card card : deck)
+
+        // Zählen Sie die Anzahl der Karten, die dem Benutzer gehören
+        String query = "SELECT COUNT(*) AS card_count FROM user_cards WHERE user_id = ? AND card_id IN (?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query))
         {
-            // Id, Name und Schaden der Karte an den String anhängen
-            sb.append(card.getId()).append(", ").append(card.getName()).append(", ").append(card.getDamage()).append("\n");
+            stmt.setInt(1, userId);
+
+            // Für alle Karten im Deck des Benutzers
+            for (int i = 0; i < cardIds.size(); i++)
+            {
+                // Setzen Sie die Karten-ID als Parameter
+                stmt.setString(i + 2, cardIds.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+
+            // Überprüfen Sie, ob die Anzahl der Karten dem Deck entspricht
+            if (rs.next())
+            {
+                int count = rs.getInt("card_count");
+                return count == cardIds.size();
+            }
         }
-        return sb.toString();
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Konfigurieren des Decks des Benutzers
+    public boolean configureDeckForUser(int userId, List<String> cardIds)
+    {
+        try
+        {
+            // Beginnen Sie eine Transaktion
+            connection.setAutoCommit(false);
+
+            // Löschen Sie zuerst alle aktuellen Karten im Deck des Benutzers
+            String deleteQuery = "DELETE FROM deck_cards WHERE deck_id = (SELECT deck_id FROM users WHERE id = ?)";
+
+            try (PreparedStatement deleteStmt = connection.prepareStatement(deleteQuery))
+            {
+                deleteStmt.setInt(1, userId);
+                deleteStmt.executeUpdate();
+            }
+            catch (SQLException e)
+            {
+                connection.rollback();
+                e.printStackTrace();
+                return false;
+            }
+
+            // Fügen Sie jede Karte zum Deck des Benutzers hinzu
+            String insertQuery = "INSERT INTO deck_cards (deck_id, card_id) VALUES ((SELECT deck_id FROM users WHERE id = ?), ?)";
+
+            try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery))
+            {
+                for (String cardId : cardIds)
+                {
+                    insertStmt.setInt(1, userId);
+                    insertStmt.setString(2, cardId);
+                    insertStmt.executeUpdate();
+                }
+            }
+            catch (SQLException e)
+            {
+                connection.rollback();
+                e.printStackTrace();
+                return false;
+            }
+
+            connection.commit();
+            return true;
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

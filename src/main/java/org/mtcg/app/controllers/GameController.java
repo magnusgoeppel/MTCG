@@ -1,7 +1,7 @@
 package org.mtcg.app.controllers;
 
 import org.mtcg.app.models.Stats;
-import org.mtcg.app.services.CommonService;
+import org.mtcg.app.services.authService;
 import org.mtcg.app.services.GameService;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
@@ -13,13 +13,13 @@ import java.util.List;
 public class GameController
 {
     private GameService gameService;
-    private CommonService commonService;
+    private authService commonService;
 
 
     public GameController()
     {
         this.gameService = new GameService();
-        this.commonService = new CommonService();
+        this.commonService = new authService();
 
     }
 

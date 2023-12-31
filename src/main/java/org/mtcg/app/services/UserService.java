@@ -1,7 +1,6 @@
 package org.mtcg.app.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONObject;
 import org.mtcg.app.models.UserData;
 import org.mtcg.database.DatabaseConnection;
 import java.sql.Connection;
@@ -11,6 +10,7 @@ import java.sql.SQLException;
 
 public class UserService
 {
+    // Verbindung zur Datenbank
     private Connection connection;
 
     public UserService()
