@@ -7,8 +7,6 @@ import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.server.Request;
 import org.mtcg.server.Response;
-
-
 import java.util.List;
 
 public class PackageController
@@ -76,15 +74,10 @@ public class PackageController
     public Response handleAcquirePackage(Request request)
     {
         // Extrahieren der userId aus dem Token
-        int userId;
+        int userId = authService.extractUserIdFromAuthHeader(request);
 
-        try
+        if (userId == -1)
         {
-            userId = authService.extractUserIdFromAuthHeader(request);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 

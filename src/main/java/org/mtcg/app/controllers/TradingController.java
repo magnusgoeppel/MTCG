@@ -8,27 +8,28 @@ import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.server.Request;
 import org.mtcg.server.Response;
-
 import java.util.List;
 
 public class TradingController
 {
+    // Instanzen der Services
     private TradingService tradingService;
 
-    private authService commonService;
+    private authService authService;
 
     public TradingController()
     {
         this.tradingService = new TradingService();
-        this.commonService = new authService();
+        this.authService = new authService();
     }
 
+    // Abrufen der Handelsangebote
     public Response handleGetTradingDeals(Request request)
     {
-        int userId;
+        // Überprüfe, ob der Token gültig ist
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(request);
+            authService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
@@ -39,27 +40,28 @@ public class TradingController
         // Abrufen der Handelsangebote für den Benutzer
         List<TradeOffer> trades = tradingService.getTrades();
 
-        // Überprüfen Sie, ob Handelsangebote vorhanden sind
+        // Überprüfen, ob Handelsangebote vorhanden sind
         if (trades.isEmpty())
         {
-            System.out.println("No trades available");
             return new Response(HttpStatus.NO_CONTENT, ContentType.JSON, "No trades available");
         }
         else
         {
+            // Konvertieren Sie die Handelsangebote in einen JSON-String
             String tradesJson = tradingService.convertTradesToJson(trades);
             return new Response(HttpStatus.OK, ContentType.JSON, tradesJson);
         }
     }
 
+    // Erstellen eines Handelsangebots
     public Response handleCreateTradingDeal(Request request)
     {
-        String authHeader = request.getHeaders().get("Authorization");
 
+        // Extrahieren die userId aus dem Token
         int userId;
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(request);
+            userId = authService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
@@ -67,32 +69,59 @@ public class TradingController
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
-        // Extrahieren Sie die Daten aus dem Anfragekörper
+        // Extrahieren der Daten aus dem Anfragekörper
         String requestBody = request.getBody();
-        // Konvertieren Sie den JSON-String in ein TradeOffer-Objekt
+
+        // Konvertieren den JSON-String in ein TradeOffer-Objekt
         TradeOffer trade = tradingService.convertJsonToTrade(requestBody);
+
+        // Karte des Handelsangebots aus der DB holen
+        Card tradeCard = tradingService.getCard(trade.getId());
+
+        // Überprüfe, ob die Karte dem User gehört
+        boolean isOwner = tradingService.checkOwnership(userId, trade.getId());
+
+        // Überprüfe, ob die Karte im Deck gelockt ist
+        boolean isCardLockedinDeck = tradingService.checkCardLockedinDeck(tradeCard, userId);
+
+        if (!isOwner)
+        {
+            return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "User does not own the card");
+        }
+        else if (isCardLockedinDeck)
+        {
+            return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "Card is locked in deck");
+        }
+
+        // Überprüfen, ob das Handelsangebot bereits existiert
+        boolean tradeExists = tradingService.checkTradeExists(trade.getId());
+
+        if (tradeExists)
+        {
+            return new Response(HttpStatus.CONFLICT, ContentType.JSON, "A deal with this deal ID already exists");
+        }
 
         // Erstellen Sie das Handelsangebot
         boolean isTradeCreated = tradingService.createTrade(trade, userId);
 
+        // Gebe zurück, ob das Handelsangebot erfolgreich erstellt wurde
         if (isTradeCreated)
         {
             return new Response(HttpStatus.CREATED, ContentType.JSON, "Trade successfully created");
         }
-        else
-        {
-            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "An error occurred while creating the trade");
-        }
+        return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "An error occurred while creating the trade");
     }
 
+    // Löschen des Handelsangebots
     public Response handleDeleteTradingDeal(Request request)
     {
-        String authHeader = request.getHeaders().get("Authorization");
 
+        // Extrahieren die userId aus dem Token
         int userId;
+
         try
         {
-            userId = commonService.extractUserIdFromAuthHeader(request);
+            userId = authService.extractUserIdFromAuthHeader(request);
         }
         catch (Exception e)
         {
@@ -100,19 +129,27 @@ public class TradingController
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
+        // Extrahieren der Trade-ID aus dem URL-Pfad
         String request_path = request.getPath();
-        // Extrahieren Sie die Trade-ID aus dem URL-Pfad
         String tradeId = tradingService.extractTradeIdFromPath(request_path);
 
-        // Überprüfen Sie, ob der Benutzer berechtigt ist, das Handelsangebot zu löschen
+        // Überprüfen, ob der Benutzer das Handelsangebot besitzt
         boolean isOwner = tradingService.checkOwnership(userId, tradeId);
 
         if (!isOwner)
         {
-            return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "Forbidden: You do not own this trade");
+            return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "You do not own this trade");
         }
 
-        // Versuchen Sie, das Handelsangebot zu löschen
+        // Überprüfen, ob das Handelsangebot bereits existiert
+        boolean tradeExists = tradingService.checkTradeExists(tradeId);
+
+        if (tradeExists)
+        {
+            return new Response(HttpStatus.CONFLICT, ContentType.JSON, "A deal with this deal ID already exists");
+        }
+
+        // Löschen des Handelsangebots
         int success = tradingService.deleteTrade(tradeId);
 
         if (success > 0)
@@ -131,24 +168,20 @@ public class TradingController
 
     public Response handleExecuteTrade(Request request)
     {
-        String authHeader = request.getHeaders().get("Authorization");
+        // Extrahieren die userId aus dem Token
+        int userId = authService.extractUserIdFromAuthHeader(request);
 
-        int userId;
-        try
+        if (userId == -1)
         {
-            userId = commonService.extractUserIdFromAuthHeader(request);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
+        // Extrahieren der Trade-ID aus dem URL-Pfad
         String request_path = request.getPath();
         // Extrahieren Sie die Trade-ID aus dem URL-Pfad
         String tradeId = tradingService.extractTradeIdFromPath(request_path);
 
-        // TradeId in der DB?
+        // Überprüfen, ob das Handelsangebot existiert
         boolean tradeExists = tradingService.checkTradeExists(tradeId);
 
         if(!tradeExists)
@@ -159,21 +192,23 @@ public class TradingController
         // Hole das Handelsangebot
         TradeOffer trade = tradingService.getTrade(tradeId);
 
-        // Hole die Id der Karte die gehandelt werden soll aus dem Anfragekörper
+        // Hole die Karte des Handelsangebots aud dem request body
         String requestBody = request.getBody();
-        String cardId = tradingService.extractCardIdFromJson(requestBody);
+        // Entfernen Sie die Anführungszeichen aus dem String
+        String cardId = requestBody.replace("\"", "");
 
-        // Karte Objekt aus der DB holen
+        // Hole die angebotene Karte aus der DB
         Card offeredCard = tradingService.getCard(cardId);
 
-        // 403: offeredCard gehört nicht dem User,
+        // Überprüfen, ob der Benutzer das Handelsangebot besitzt
         boolean isOwner = tradingService.checkOwnership(userId, tradeId);
-        // oder die Anforderungen werden nicht erfüllt (Typ, MinimumDamage),
+        // Überprüfen, ob die Karte dem Typ des Handelsangebots entspricht
+        // und ob diese den minimalen Schadenswert hat
         boolean isCardTypeValid = tradingService.checkCardType(offeredCard, trade);
-        // oder die offeredCard ist im Deck gelockt
+        // Überprüfen, ob die Karte im Deck gelockt ist
         boolean isCardLockedinDeck = tradingService.checkCardLockedinDeck(offeredCard, userId);
 
-        // Trade mit sich selbst ist nicht erlaubt
+
         if (isOwner)
         {
             return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "Trade with yourself is not allowed");
@@ -187,9 +222,10 @@ public class TradingController
             return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "Card is locked in deck");
         }
 
-
+        // Führen Sie den Handel aus
         boolean isTradeExecuted = tradingService.executeTrade(trade, offeredCard, userId);
 
+        // Gebe zurück, ob der Handel erfolgreich ausgeführt wurde
         if (isTradeExecuted)
         {
             return new Response(HttpStatus.OK, ContentType.JSON, "Trade successfully executed");

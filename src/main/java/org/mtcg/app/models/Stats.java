@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @Getter
 @Setter
-@JsonPropertyOrder({ "Username", "Elo", "Wins", "Losses"})
+//@JsonPropertyOrder({ "Username", "Elo", "Wins", "Losses"})
 public class Stats
 {
     private String username;

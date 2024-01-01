@@ -25,15 +25,10 @@ public class CardsController
     public Response handleGetCards(Request request)
     {
         // Extrahieren der userId aus dem Token
-        int userId;
+        int userId = authService.extractUserIdFromAuthHeader(request);
 
-        try
+        if (userId == -1)
         {
-            userId = authService.extractUserIdFromAuthHeader(request);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 

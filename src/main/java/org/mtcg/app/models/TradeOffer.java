@@ -7,19 +7,19 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @Getter
 @Setter
-@JsonPropertyOrder({ "Id", "cardToTrade", "minimumDamage", "type"})
+//@JsonPropertyOrder({ "Id", "cardToTrade", "minimumDamage", "type"})
 public class TradeOffer
 {
-    @JsonProperty("Id")
+    //@JsonProperty("Id")
     private String id;
 
-    @JsonProperty("CardToTrade")
+    //@JsonProperty("CardToTrade")
     private String cardToTrade;
 
-    @JsonProperty("MinimumDamage")
+    //@JsonProperty("MinimumDamage")
     private int minimumDamage;
 
-    @JsonProperty("Type")
+    //@JsonProperty("Type")
     private String type;
 
     public TradeOffer() {}
