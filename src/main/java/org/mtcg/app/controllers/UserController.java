@@ -14,7 +14,6 @@ public class UserController
     private UserService userService;
     private authService authService;
 
-    // Konstruktor der Klasse UserController
     public UserController()
     {
         this.userService = new UserService();

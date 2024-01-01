@@ -2,33 +2,30 @@ package org.mtcg.app.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.json.JSONObject;
 import org.mtcg.app.models.Card;
 import org.mtcg.app.models.Stats;
 import org.mtcg.database.DatabaseConnection;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 public class GameService
 {
+    // Verbindung zur Datenbank
     private Connection connection;
-
 
     public GameService()
     {
         this.connection = DatabaseConnection.getConnection();
     }
 
+    // Hole die Stats des Benutzers
     public String getStats(int userId)
     {
-        // Hole den Name aus der users Tabelle
         String query = "SELECT username FROM users WHERE id = ?";
         try
         {
@@ -48,9 +45,9 @@ public class GameService
 
                 if (rs.next())
                 {
-                    // Erstelle ein JSON-Objekt mit den Stats
                     ObjectMapper mapper = new ObjectMapper();
                     ObjectNode stats = mapper.createObjectNode();
+
                     stats.put("Username", username);
                     stats.put("Elo", rs.getInt("elo"));
                     stats.put("Wins", rs.getInt("wins"));
@@ -75,11 +72,12 @@ public class GameService
         }
     }
 
+    // Hole das Scoreboard
     public List<Stats> getScoreboard()
     {
         List<Stats> scoreboard = new ArrayList<>();
-        // Verbinden Sie sich mit der Datenbank und führen Sie eine Abfrage aus
-        try (Connection connection = DatabaseConnection.getConnection())
+
+        try
         {
             String query = "SELECT u.username, s.* " +
                     "FROM users u " +
@@ -89,7 +87,6 @@ public class GameService
             PreparedStatement stmt = connection.prepareStatement(query);
             ResultSet rs = stmt.executeQuery();
 
-            // Iterieren Sie über die Ergebnisse und erstellen Sie für jeden Eintrag ein Stats-Objekt
             while (rs.next())
             {
                 String username = rs.getString("username");
@@ -103,12 +100,11 @@ public class GameService
         catch (Exception e)
         {
             e.printStackTrace();
-            return null;
         }
         return scoreboard;
     }
 
-    // convert scoreboard to json
+    // Konvertiere das Scoreboard in ein JSON-Objekt
     public String convertScoreboardToJson(List<Stats> scoreboard)
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -122,17 +118,17 @@ public class GameService
         }
     }
 
-    // Holle den Opponenten aus der Battles Tabelle (user_id2) wo user_id2 = null ist;
+    // Suche nach einem Gegner
     public int getOpponent(int userId)
     {
-
-        // SQL-Query, um einen verfügbaren Kampf zu finden, wo ein Spieler wartet
+        // SQL-Query, um einen wartenden Gegner zu finden
         String findOpponentQuery = "SELECT id, user2_id FROM battles WHERE user1_id IS NULL AND user2_id IS NOT NULL LIMIT 1";
 
-        // SQL-Query, um den aktuellen Benutzer als user1_id in einen Kampf einzutragen
+       // SQL-Query, um den aktuellen Benutzer in den gefundenen Kampf einzufügen
         String updateBattleQuery = "UPDATE battles SET user1_id = ? WHERE id = ?";
 
-        try {
+        try
+        {
             // Versuche, einen wartenden Gegner zu finden
             PreparedStatement findStmt = connection.prepareStatement(findOpponentQuery);
             ResultSet rs = findStmt.executeQuery();
@@ -142,6 +138,7 @@ public class GameService
                 int battleId = rs.getInt("id");
                 int opponentId = rs.getInt("user2_id");
 
+                // Überprüfen Sie, ob der Benutzer versucht, gegen sich selbst zu kämpfen
                 if(userId == opponentId)
                 {
                     return 0;
@@ -153,13 +150,14 @@ public class GameService
                 updateStmt.setInt(2, battleId);
                 int affectedRows = updateStmt.executeUpdate();
 
+                // Überprüfen Sie, ob das Update erfolgreich war
                 if (affectedRows == 1)
                 {
                     return opponentId;
                 }
                 else
                 {
-                    throw new SQLException("Unable to join the battle");
+                    return -1;
                 }
             }
             else
@@ -174,29 +172,11 @@ public class GameService
         }
     }
 
-
-    public void addOpponent(int userId)
-    {
-        // Erstelle einen neuen Eintrag in der battles Tabelle mit der übergebenen userId als user_id2
-        String query = "INSERT INTO battles (user2_id) VALUES (?)";
-        try
-        {
-            PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setInt(1, userId);
-            stmt.executeUpdate();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-
-
+    // Führe einen Kampf zwischen zwei Benutzern aus
     public synchronized String Battle(int userId, int opponentId)
     {
-        StringBuilder battleLog = new StringBuilder();
 
+        StringBuilder battleLog = new StringBuilder();
         String username = getUserName(userId);
         String opponentname = getUserName(opponentId);
         int battleId = getBattleId(userId, opponentId);
@@ -210,7 +190,7 @@ public class GameService
 
         for (int round = 1; round <= 100; ++round)
         {
-            // Wähle radom eine Karte aus List<String> userDeck und List<String> opponentDeck
+            // Wähle radom eine Karte aus dem userDeck und dem opponentDeck
             String userCardId = getRandomCardId(userDeck);
             String opponentCardId = getRandomCardId(opponentDeck);
 
@@ -234,7 +214,7 @@ public class GameService
                 {
                     battleLog.append("Goblin are too afraid of Dragons to attack => ");
                     battleLog.append(username).append(": ").append("Dragon wins").append("\n");
-                    // Füge die Karte dem Gegner hinzu und lösche sie aus dem Deck
+
                     opponentDeck.add(userCardId);
                     userDeck.remove(userCardId);
 
@@ -244,7 +224,7 @@ public class GameService
                 {
                     battleLog.append("Goblin are too afraid of Dragons to attack => ");
                     battleLog.append(opponentname).append(": ").append("Dragon wins").append("\n");
-                    // Lösche die Karte aus dem Deck
+
                     userDeck.add(opponentCardId);
                     opponentDeck.remove(opponentCardId);
 
@@ -255,7 +235,7 @@ public class GameService
                 {
                     battleLog.append("Wizzard can control Orks so they are not able to damage them => ");
                     battleLog.append(username).append(": ").append("Dragon wins").append("\n");
-                    // Lösche die Karte aus dem Deck
+
                     opponentDeck.add(userCardId);
                     userDeck.remove(userCardId);
 
@@ -265,7 +245,7 @@ public class GameService
                 {
                     battleLog.append("Wizzard can control Orks so they are not able to damage them => ");
                     battleLog.append(opponentname).append(": ").append("Dragon wins").append("\n");
-                    // Lösche die Karte aus dem Deck
+
                     userDeck.add(opponentCardId);
                     opponentDeck.remove(opponentCardId);
 
@@ -276,7 +256,7 @@ public class GameService
                 {
                     battleLog.append("FireElves can dodge Dragon attacks => ");
                     battleLog.append(username).append(": ").append("FireElves wins").append("\n");
-                    // Lösche die Karte aus dem Deck
+
                     opponentDeck.add(userCardId);
                     userDeck.remove(userCardId);
 
@@ -286,7 +266,7 @@ public class GameService
                 {
                     battleLog.append("FireElves can dodge Dragon attacks => ");
                     battleLog.append(opponentname).append(": ").append("FireElves wins").append("\n");
-                    // Lösche die Karte aus dem Deck
+
                     userDeck.add(opponentCardId);
                     opponentDeck.remove(opponentCardId);
 
@@ -319,7 +299,7 @@ public class GameService
                 {
                     battleLog.append("The armor of Knights is so heavy that WaterSpells make them drown them instantly => ");
                     battleLog.append(opponentname).append(": ").append("WaterSpells wins").append("\n");
-                    // Lösche die Karte aus dem Deck
+
                     userDeck.add(opponentCardId);
                     opponentDeck.remove(opponentCardId);
 
@@ -330,7 +310,7 @@ public class GameService
                 {
                     battleLog.append("Kraken are immune to spells => ");
                     battleLog.append(username).append(": ").append("Kraken wins").append("\n");
-                    // Lösche die Karte aus dem Deck
+
                     opponentDeck.add(userCardId);
                     userDeck.remove(userCardId);
 
@@ -359,7 +339,7 @@ public class GameService
                 {
                     battleLog.append("The armor of Knights is so heavy that WaterSpells make them drown them instantly => ");
                     battleLog.append(username).append(": ").append("WaterSpells wins").append("\n");
-                    // Lösche die Karte aus dem Deck
+
                     opponentDeck.add(userCardId);
                     userDeck.remove(userCardId);
 
@@ -370,7 +350,7 @@ public class GameService
                 {
                     battleLog.append("Kraken are immune to spells ->");
                     battleLog.append(opponentname).append(": ").append("Kraken wins").append("\n");
-                    // Lösche die Karte aus dem Deck
+
                     userDeck.add(opponentCardId);
                     opponentDeck.remove(opponentCardId);
 
@@ -443,11 +423,30 @@ public class GameService
         }
         // Speichern Sie das Battle-Log in der DB
         saveBattleLog(battleId, battleLog.toString());
+        // Aktualisieren das Scoreboard
         updateScoreboard();
 
+        // Geben Sie das Battle-Log zurück
         return battleLog.toString();
     }
 
+    // Füge den Benutzer zur Queue hinzu
+    public void addOpponent(int userId)
+    {
+        String query = "INSERT INTO battles (user2_id) VALUES (?)";
+        try
+        {
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setInt(1, userId);
+            stmt.executeUpdate();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    // ------------------------------ Hilfsfunktionen ------------------------------
 
     private Card getCard(String cardId)
     {
