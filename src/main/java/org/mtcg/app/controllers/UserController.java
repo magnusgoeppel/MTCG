@@ -114,7 +114,7 @@ public class UserController
     // UserData aktualisieren (Name, Bio, Image)
     public Response handleUpdateUser(Request request)
     {
-        // Extrahieren die userId aus dem Token
+        // Extrahieren der userId aus dem Token
         int userId;
 
         try

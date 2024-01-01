@@ -26,7 +26,7 @@ public class GameController
     // Abrufen der Stats
     public Response handleGetStats(Request request)
     {
-        // Extrahieren die userId aus dem Token
+        // Extrahieren der userId aus dem Token
         int userId;
 
         try
@@ -85,7 +85,7 @@ public class GameController
     // Ausführen des Kampfes
     public Response handleBattle(Request request)
     {
-        // Extrahieren die userId aus dem Token
+        // Extrahieren der userId aus dem Token
         int userId;
 
         try

@@ -26,7 +26,7 @@ public class authService
             return -1;
         }
 
-        String token = authHeader.substring(7); // Entfernen von "Bearer "
+        String token = authHeader.substring(7);
 
         int userId;
 

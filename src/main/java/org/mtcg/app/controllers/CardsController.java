@@ -24,7 +24,7 @@ public class CardsController
     // Abrufen der Karten eines Benutzers
     public Response handleGetCards(Request request)
     {
-        // Extrahieren der Benutzerdaten aus dem Request
+        // Extrahieren der userId aus dem Token
         int userId;
 
         try
@@ -66,7 +66,7 @@ public class CardsController
         // Extrahiere das Ausgabeformat aus dem Request
         String format = request.getQueryParams().get("format");
 
-        // Extrahiere die Benutzerdaten aus dem Request
+        // Extrahieren der userId aus dem Token
         int userId;
 
         try
@@ -107,7 +107,7 @@ public class CardsController
 
     public Response handleConfigureDeck(Request request)
     {
-        // Extrahieren der Benutzerdaten aus dem Request
+        // Extrahieren der userId aus dem Token
         int userId;
 
         try
