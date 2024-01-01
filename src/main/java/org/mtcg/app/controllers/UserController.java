@@ -81,7 +81,7 @@ public class UserController
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
-        // {username} und username müssen übereinstimmen
+        // {username} aus dem Request extrahieren
         String username = request.getPath().split("/")[2];
 
         // Extrahieren des Tokens und Entfernen des "-mtcgToken" Teils
@@ -116,7 +116,7 @@ public class UserController
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
         }
 
-        // {username} und username müssen übereinstimmen
+        // Hole den Benutzernamen aus dem Request
         String username = request.getPath().split("/")[2];
 
         // Extrahieren des Tokens und Entfernen des "-mtcgToken" Teils
@@ -139,6 +139,43 @@ public class UserController
         if (success)
         {
             return new Response(HttpStatus.OK, ContentType.JSON, "User updated successfully");
+        }
+        else
+        {
+            return new Response(HttpStatus.NOT_FOUND, ContentType.JSON, "User not found");
+        }
+    }
+
+    // Ausloggen eines Benutzers
+    public Response handleLogout(Request request)
+    {
+        // Extrahieren der userId aus dem Token
+        int userId = authService.extractUserIdFromAuthHeader(request);
+
+        if (userId == -1)
+        {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
+        }
+
+        // Hole den username aus der DB
+        String username = userService.getUsername(userId);
+
+        // Extrahieren des Tokens und Entfernen des "-mtcgToken" Teils
+        String token = request.getHeaders().get("Authorization").substring(7, request.getHeaders().get("Authorization").length() - 10);
+
+        // Überprüfen, ob Username und Token übereinstimmen
+        if(!username.equals(token))
+        {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized: Invalid or missing token");
+        }
+
+        // Löschen des Tokens
+        boolean success = userService.deleteUserToken(userId);
+
+        // Gebe zurück, ob das Ausloggen erfolgreich war
+        if (success)
+        {
+            return new Response(HttpStatus.OK, ContentType.JSON, "User logged out successfully");
         }
         else
         {

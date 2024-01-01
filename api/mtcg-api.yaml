@@ -113,6 +113,21 @@ paths:
                 type: string
                 description: The token for authenticated users.
                 example: kienboec-mtcgToken
+  /logout:
+    post:
+      tags:
+        - users
+      summary: Logs out a user by invalidating their token.
+      description: This endpoint invalidates the user's current token, effectively logging them out.
+      responses:
+        '200':
+          description: Successfully logged out.
+        '401':
+          description: Unauthorized access, invalid or missing token.
+        '404':
+          description: User not found.
+      security:
+        - mtcgAuth: [ ]
   /packages:
     post:
       tags:

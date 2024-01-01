@@ -196,6 +196,51 @@ public class UserService
         }
     }
 
+    // Überprüfen Sie, ob ein Benutzer bereits angemeldet ist
+    public boolean checkIfLoggedOut(String username)
+    {
+        try
+        {
+            String query = "SELECT token FROM users WHERE username = ?";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, username);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next())
+            {
+                String token = rs.getString("token");
+                return token == null;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteUserToken(int UserId)
+    {
+        try
+        {
+            String query = "UPDATE users SET token = NULL WHERE id = ?";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setInt(1, UserId);
+
+            int result = stmt.executeUpdate();
+            return result > 0;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     // ------------------------------ Hilfsfunktionen ------------------------------
 
     private int getUserId(String username)
@@ -220,6 +265,32 @@ public class UserService
         {
             e.printStackTrace();
             return -1;
+        }
+    }
+
+    // Holen Sie den Benutzernamen eines Benutzers
+    public String getUsername(int userId)
+    {
+        try
+        {
+            String query = "SELECT username FROM users WHERE id = ?";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setInt(1, userId);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next())
+            {
+                return rs.getString("username");
+            }
+            else
+            {
+                return null;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
         }
     }
 

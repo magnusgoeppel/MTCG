@@ -270,6 +270,30 @@ curl -X GET http://localhost:10001/tradings --header "Authorization: Bearer alte
 echo.
 
 REM --------------------------------------------------
+echo 22) Logout
+echo Logout kienboec
+curl -X POST http://localhost:10001/logout --header "Authorization: Bearer kienboec-mtcgToken"
+echo.
+echo Logout altenhof
+curl -X POST http://localhost:10001/logout --header "Authorization: Bearer altenhof-mtcgToken"
+echo.
+echo.
+
+echo should fail (already logged out or invalid token):
+echo Attempting to logout kienboec again
+curl -X POST http://localhost:10001/logout --header "Authorization: Bearer kienboec-mtcgToken"
+echo.
+echo Attempting to logout altenhof again
+curl -X POST http://localhost:10001/logout --header "Authorization: Bearer altenhof-mtcgToken"
+echo.
+echo Attempting to logout with invalid token
+curl -X POST http://localhost:10001/logout --header "Authorization: Bearer invalidToken"
+echo.
+echo Attempting to logout without token
+curl -X POST http://localhost:10001/logout
+echo.
+
+REM --------------------------------------------------
 echo end...
 
 REM this is approx a sleep 

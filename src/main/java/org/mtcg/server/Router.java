@@ -119,6 +119,11 @@ public class Router
         {
             return tradingController.handleExecuteTrade(request);
         }
+        // Ausloggen eines Benutzers
+        if (request.getMethod() == Method.POST && "/logout".equals(request.getPath()))
+        {
+            return userController.handleLogout(request);
+        }
         // Wenn keine Route gefunden wurde, geben Sie eine Fehlermeldung zurück
         return new Response(HttpStatus.NOT_FOUND, ContentType.HTML, "Not Found");
     }

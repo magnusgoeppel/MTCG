@@ -333,6 +333,33 @@ echo.
 pause
 
 REM --------------------------------------------------
+echo 22) Logout
+echo Logout kienboec
+curl -i -X POST http://localhost:10001/logout --header "Authorization: Bearer kienboec-mtcgToken"
+echo.
+echo Logout altenhof
+curl -i -X POST http://localhost:10001/logout --header "Authorization: Bearer altenhof-mtcgToken"
+echo.
+echo.
+
+echo should fail (already logged out or invalid token):
+echo Attempting to logout kienboec again
+curl -i -X POST http://localhost:10001/logout --header "Authorization: Bearer kienboec-mtcgToken"
+echo.
+echo Attempting to logout altenhof again
+curl -i -X POST http://localhost:10001/logout --header "Authorization: Bearer altenhof-mtcgToken"
+echo.
+echo Attempting to logout with invalid token
+curl -i -X POST http://localhost:10001/logout --header "Authorization: Bearer invalidToken"
+echo.
+echo Attempting to logout without token
+curl -i -X POST http://localhost:10001/logout
+echo.
+
+pause
+
+
+REM --------------------------------------------------
 echo end...
 
 REM this is approx a sleep 
