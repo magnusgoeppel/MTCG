@@ -6,7 +6,7 @@ import lombok.AccessLevel;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 
-@Getter(AccessLevel.PRIVATE)
+@Getter
 @Setter(AccessLevel.PRIVATE)
 public class Response
 {
