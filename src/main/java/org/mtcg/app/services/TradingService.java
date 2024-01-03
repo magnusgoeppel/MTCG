@@ -162,6 +162,7 @@ public class TradingService
                     if (deckRs.next())
                     {
                         int count = deckRs.getInt(1);
+
                         if (count > 0)
                         {
                             // Karte ist im Deck gesperrt

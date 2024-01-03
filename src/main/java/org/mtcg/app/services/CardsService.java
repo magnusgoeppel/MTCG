@@ -24,7 +24,7 @@ public class CardsService
     }
 
     // Speicher der Karten des Benutzers
-    public List<Card> getCardsForUser(int userId) throws SQLException
+    public List<Card> getCardsForUser(int userId)
     {
         List<Card> cards = new ArrayList<>();
 
@@ -42,6 +42,10 @@ public class CardsService
                                      rs.getInt("damage"));
                 cards.add(card);
             }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
         }
         return cards;
     }

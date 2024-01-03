@@ -448,6 +448,7 @@ public class GameService
 
     // ------------------------------ Hilfsfunktionen ------------------------------
 
+    // Hole die Karte aus der DB
     private Card getCard(String cardId)
     {
         // Wählen Sie die Karte mit der übergebenen ID aus der cards Tabelle aus
@@ -478,6 +479,7 @@ public class GameService
         }
     }
 
+    // Hole den Namen des Benutzers aus der DB
     private String getUserName(int userId)
     {
         // Wählen Sie den Namen des Users mit der übergebenen ID aus der users Tabelle aus
@@ -504,33 +506,41 @@ public class GameService
         }
     }
 
+
+    // Hole das Deck aus der DB
     private List<String> getDeck(int userId)
     {
         List<String> deck = new ArrayList<>();
-        // SQL-Abfrage, die einen JOIN zwischen den Tabellen 'users' und 'deck_cards' verwendet
+
         String query = "SELECT dc.card_id FROM deck_cards dc " +
                 "JOIN users u ON u.deck_id = dc.deck_id " +
                 "WHERE u.id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (PreparedStatement stmt = connection.prepareStatement(query))
+        {
             stmt.setInt(1, userId);
+
             try (ResultSet rs = stmt.executeQuery())
             {
-                while (rs.next()) {
+                while (rs.next())
+                {
                     deck.add(rs.getString("card_id"));
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
         return deck;
     }
 
+    // Wähle eine zufällige Karte aus dem Deck aus
     private String getRandomCardId(List<String> deck)
     {
         if (!deck.isEmpty())
         {
-            // Wähle eine zufällige Karte aus dem Deck aus
+
             Random random = new Random();
             int idx = random.nextInt(deck.size());
             return deck.get(idx);
@@ -541,14 +551,12 @@ public class GameService
         }
     }
 
-    // 3P für Sieg, -5P für Niederlage
+    // Aktualisieren die Statistiken der Benutzer
     private void updateStats(int userId, int opponentId)
     {
-        // Hole die Stats des Users aus der DB
+
         Stats userStats = getStatsFromDB(userId);
         Stats opponentStats = getStatsFromDB(opponentId);
-
-        // 3P für Sieg, -5P für Niederlage
 
         userStats.setElo(userStats.getElo() + 3);
         userStats.setWins(userStats.getWins() + 1);
@@ -569,6 +577,7 @@ public class GameService
         saveStatsToDB(opponentId, opponentStats);
     }
 
+    // Hole die Stats aus der DB
     private Stats getStatsFromDB(int userId)
     {
         // Wählen Sie die Stats des Users mit der übergebenen ID aus der stats Tabelle aus
@@ -604,6 +613,7 @@ public class GameService
         }
     }
 
+    // Speichern die Stats in der DB
     private void saveStatsToDB(int userId, Stats userStats)
     {
         // Definieren Sie die SQL-Abfrage zum Aktualisieren der Statistiken
@@ -621,6 +631,7 @@ public class GameService
 
             // Führen Sie das Update aus
             int affectedRows = stmt.executeUpdate();
+
             if (affectedRows == 0)
             {
                 throw new SQLException("Updating stats failed, no rows affected.");
@@ -632,6 +643,7 @@ public class GameService
         }
     }
 
+    // Hole die ID des Kampfes aus der DB
     private int getBattleId(int userId, int opponentId)
     {
         // Wählen Sie die ID des Kampfes aus der battles Tabelle aus
@@ -659,19 +671,17 @@ public class GameService
         }
     }
 
-    private void saveBattleLog(int battleId, String battleLog) {
+    // Speichern Sie das Battle-Log in der DB
+    private void saveBattleLog(int battleId, String battleLog)
+    {
         // SQL-Query, um das Battle-Log zu aktualisieren
         String query = "UPDATE battles SET log = ? WHERE id = ?";
 
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query))
+        try (PreparedStatement stmt = connection.prepareStatement(query))
         {
-
-
             stmt.setString(1, battleLog);
             stmt.setInt(2, battleId);
 
-            // Ausführen des Updates
             int affectedRows = stmt.executeUpdate();
 
             // Überprüfen Sie, ob das Update erfolgreich war
@@ -686,9 +696,11 @@ public class GameService
         }
     }
 
-    private void updateScoreboard() {
-        try {
-            // Beginnen Sie eine Transaktion
+    // Aktualisieren das Scoreboard
+    public void updateScoreboard()
+    {
+        try
+        {
             connection.setAutoCommit(false);
 
             // Holen Sie sich die sortierte Liste der Benutzer nach ELO
@@ -696,43 +708,35 @@ public class GameService
             PreparedStatement getSortedUsersStmt = connection.prepareStatement(getSortedUsersQuery);
             ResultSet sortedUsers = getSortedUsersStmt.executeQuery();
 
-            // Aktualisieren Sie die Platzierungen für jeden Benutzer
-            int place = 1; // Starten Sie die Platzierung bei 1
+            int place = 1;
+
             while (sortedUsers.next())
             {
                 int userId = sortedUsers.getInt("user_id");
 
                 // Aktualisieren den Platz des Benutzers im Scoreboard
                 String updatePlaceQuery = "UPDATE scoreboards SET place = ? WHERE user_id = ?";
-                PreparedStatement updatePlaceStmt = connection.prepareStatement(updatePlaceQuery);
-                updatePlaceStmt.setInt(1, place);
-                updatePlaceStmt.setInt(2, userId);
-                updatePlaceStmt.executeUpdate();
 
-                ++place; // Gehen Sie zum nächsten Platz über
-            }
+                try (PreparedStatement updatePlaceStmt = connection.prepareStatement(updatePlaceQuery))
+                {
 
-            // Commit der Transaktion
-            connection.commit();
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                // Im Fehlerfall die Transaktion zurückrollen
-                if (connection != null) {
+                    updatePlaceStmt.setInt(1, place);
+                    updatePlaceStmt.setInt(2, userId);
+                    updatePlaceStmt.executeUpdate();
+
+                    ++place;
+                }
+                catch (SQLException e)
+                {
                     connection.rollback();
+                    e.printStackTrace();
                 }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
             }
-        } finally {
-            try {
-                // Stellen Sie sicher, dass AutoCommit wieder aktiviert ist
-                if (connection != null) {
-                    connection.setAutoCommit(true);
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
+            connection.commit();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
         }
     }
 }

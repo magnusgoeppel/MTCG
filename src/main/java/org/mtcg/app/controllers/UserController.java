@@ -2,7 +2,7 @@ package org.mtcg.app.controllers;
 
 import org.json.JSONObject;
 import org.mtcg.app.services.UserService;
-import org.mtcg.app.services.authService;
+import org.mtcg.app.services.AuthService;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.server.Request;
@@ -12,12 +12,12 @@ public class UserController
 {
     // Instanzen der Services
     private UserService userService;
-    private authService authService;
+    private AuthService authService;
 
     public UserController()
     {
         this.userService = new UserService();
-        this.authService = new authService();
+        this.authService = new AuthService();
     }
 
 

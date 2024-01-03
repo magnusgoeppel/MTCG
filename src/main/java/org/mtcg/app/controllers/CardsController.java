@@ -1,24 +1,26 @@
 package org.mtcg.app.controllers;
 
+import lombok.Setter;
 import org.mtcg.app.models.Card;
 import org.mtcg.app.services.CardsService;
-import org.mtcg.app.services.authService;
+import org.mtcg.app.services.AuthService;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.server.Request;
 import org.mtcg.server.Response;
 import org.mtcg.http.ContentType;
 import java.util.List;
 
+@Setter
 public class CardsController
 {
     // Instanzen der Services
     private CardsService cardsService;
-    private authService authService;
+    private AuthService authService;
 
     public CardsController()
     {
         this.cardsService = new CardsService();
-        this.authService = new authService();
+        this.authService = new AuthService();
     }
 
     // Abrufen der Karten eines Benutzers

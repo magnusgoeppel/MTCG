@@ -1,8 +1,9 @@
 package org.mtcg.app.controllers;
 
+import lombok.Setter;
 import org.mtcg.app.models.Card;
 import org.mtcg.app.models.TradeOffer;
-import org.mtcg.app.services.authService;
+import org.mtcg.app.services.AuthService;
 import org.mtcg.app.services.TradingService;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
@@ -10,17 +11,18 @@ import org.mtcg.server.Request;
 import org.mtcg.server.Response;
 import java.util.List;
 
+@Setter
 public class TradingController
 {
     // Instanzen der Services
     private TradingService tradingService;
 
-    private authService authService;
+    private AuthService authService;
 
     public TradingController()
     {
         this.tradingService = new TradingService();
-        this.authService = new authService();
+        this.authService = new AuthService();
     }
 
     // Abrufen der Handelsangebote

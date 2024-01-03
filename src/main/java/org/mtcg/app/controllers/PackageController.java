@@ -1,23 +1,25 @@
 package org.mtcg.app.controllers;
 
+import lombok.Setter;
 import org.mtcg.app.models.Card;
 import org.mtcg.app.services.PackageService;
-import org.mtcg.app.services.authService;
+import org.mtcg.app.services.AuthService;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
 import org.mtcg.server.Request;
 import org.mtcg.server.Response;
 import java.util.List;
 
+@Setter
 public class PackageController
 {
     private PackageService packageService;
-    private authService authService;
+    private AuthService authService;
 
     public PackageController()
     {
         this.packageService = new PackageService();
-        this.authService = new authService();
+        this.authService = new AuthService();
 
     }
 

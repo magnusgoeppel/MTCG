@@ -1,5 +1,6 @@
 package org.mtcg.app.services;
 
+import lombok.Setter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mtcg.app.models.UserData;
 import org.mtcg.database.DatabaseConnection;
@@ -8,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Setter
 public class UserService
 {
     // Verbindung zur Datenbank
@@ -28,9 +30,11 @@ public class UserService
             // Erstelle ein neues Deck und erhalte die ID
             String insertDeckQuery = "INSERT INTO decks DEFAULT VALUES RETURNING id";
             int deckId;
+
             try (PreparedStatement insertDeckStmt = connection.prepareStatement(insertDeckQuery))
             {
                 ResultSet deckRs = insertDeckStmt.executeQuery();
+
                 if (!deckRs.next())
                 {
                     connection.rollback();
@@ -196,33 +200,7 @@ public class UserService
         }
     }
 
-    // Überprüfen Sie, ob ein Benutzer bereits angemeldet ist
-    public boolean checkIfLoggedOut(String username)
-    {
-        try
-        {
-            String query = "SELECT token FROM users WHERE username = ?";
-            PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setString(1, username);
-
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next())
-            {
-                String token = rs.getString("token");
-                return token == null;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
+    // Löschen Sie das Token für einen Benutzer in der Datenbank
     public boolean deleteUserToken(int UserId)
     {
         try
@@ -243,7 +221,7 @@ public class UserService
 
     // ------------------------------ Hilfsfunktionen ------------------------------
 
-    private int getUserId(String username)
+    public int getUserId(String username)
     {
         try
         {

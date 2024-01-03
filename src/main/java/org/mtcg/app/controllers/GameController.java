@@ -1,7 +1,8 @@
 package org.mtcg.app.controllers;
 
+import lombok.Setter;
 import org.mtcg.app.models.Stats;
-import org.mtcg.app.services.authService;
+import org.mtcg.app.services.AuthService;
 import org.mtcg.app.services.GameService;
 import org.mtcg.http.ContentType;
 import org.mtcg.http.HttpStatus;
@@ -9,17 +10,18 @@ import org.mtcg.server.Request;
 import org.mtcg.server.Response;
 import java.util.List;
 
+@Setter
 public class GameController
 {
     // Instanzen der Services
-    private final GameService gameService;
-    private final authService authService;
+    private GameService gameService;
+    private AuthService authService;
 
 
     public GameController()
     {
         this.gameService = new GameService();
-        this.authService = new authService();
+        this.authService = new AuthService();
 
     }
 

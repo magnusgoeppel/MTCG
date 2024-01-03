@@ -7,12 +7,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class authService
+
+public class AuthService
 {
     // Verbindung zur Datenbank
     private Connection connection;
 
-    public authService()
+    public AuthService()
     {
         this.connection = DatabaseConnection.getConnection();
     }
