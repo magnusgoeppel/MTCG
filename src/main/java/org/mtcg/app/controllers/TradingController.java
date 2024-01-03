@@ -78,10 +78,10 @@ public class TradingController
         TradeOffer trade = tradingService.convertJsonToTrade(requestBody);
 
         // Karte des Handelsangebots aus der DB holen
-        Card tradeCard = tradingService.getCard(trade.getId());
+        Card tradeCard = tradingService.getCard(trade.getCardToTrade());
 
         // Überprüfe, ob die Karte dem User gehört
-        boolean isOwner = tradingService.checkOwnership(userId, trade.getId());
+        boolean isOwner = tradingService.checkOwnershipTradeCard(userId, trade.getCardToTrade());
 
         // Überprüfe, ob die Karte im Deck gelockt ist
         boolean isCardLockedinDeck = tradingService.checkCardLockedinDeck(tradeCard, userId);
@@ -117,7 +117,6 @@ public class TradingController
     // Löschen des Handelsangebots
     public Response handleDeleteTradingDeal(Request request)
     {
-
         // Extrahieren die userId aus dem Token
         int userId;
 
@@ -146,9 +145,9 @@ public class TradingController
         // Überprüfen, ob das Handelsangebot bereits existiert
         boolean tradeExists = tradingService.checkTradeExists(tradeId);
 
-        if (tradeExists)
+        if (!tradeExists)
         {
-            return new Response(HttpStatus.CONFLICT, ContentType.JSON, "A deal with this deal ID already exists");
+            return new Response(HttpStatus.CONFLICT, ContentType.JSON, "The provided deal ID was not found");
         }
 
         // Löschen des Handelsangebots
@@ -207,6 +206,7 @@ public class TradingController
         // Überprüfen, ob die Karte dem Typ des Handelsangebots entspricht
         // und ob diese den minimalen Schadenswert hat
         boolean isCardTypeValid = tradingService.checkCardType(offeredCard, trade);
+
         // Überprüfen, ob die Karte im Deck gelockt ist
         boolean isCardLockedinDeck = tradingService.checkCardLockedinDeck(offeredCard, userId);
 
@@ -224,8 +224,16 @@ public class TradingController
             return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "Card is locked in deck");
         }
 
+        // Hole die UserId des Erstellers des Handelsangebots
+        int tradeCreatorId = tradingService.getTradeCreatorId(tradeId);
+
+        if (tradeCreatorId == -1)
+        {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "An error occurred while executing the trade");
+        }
+
         // Führen Sie den Handel aus
-        boolean isTradeExecuted = tradingService.executeTrade(trade, offeredCard, userId);
+        boolean isTradeExecuted = tradingService.executeTrade(trade, offeredCard, userId, tradeCreatorId);
 
         // Gebe zurück, ob der Handel erfolgreich ausgeführt wurde
         if (isTradeExecuted)

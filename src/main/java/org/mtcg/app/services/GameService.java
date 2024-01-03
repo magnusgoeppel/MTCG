@@ -15,19 +15,12 @@ import java.util.Random;
 
 public class GameService
 {
-    // Verbindung zur Datenbank
-    private Connection connection;
-
-    public GameService()
-    {
-        this.connection = DatabaseConnection.getConnection();
-    }
-
     // Hole die Stats des Benutzers
     public String getStats(int userId)
     {
         String query = "SELECT username FROM users WHERE id = ?";
-        try
+
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setInt(1, userId);
@@ -77,7 +70,7 @@ public class GameService
     {
         List<Stats> scoreboard = new ArrayList<>();
 
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             String query = "SELECT u.username, s.* " +
                     "FROM users u " +
@@ -101,6 +94,7 @@ public class GameService
         {
             e.printStackTrace();
         }
+
         return scoreboard;
     }
 
@@ -110,8 +104,9 @@ public class GameService
         ObjectMapper mapper = new ObjectMapper();
         try
         {
-            return mapper.writeValueAsString(scoreboard);
-        } catch (Exception e)
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(scoreboard);
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
             return "[]";
@@ -127,7 +122,7 @@ public class GameService
        // SQL-Query, um den aktuellen Benutzer in den gefundenen Kampf einzufügen
         String updateBattleQuery = "UPDATE battles SET user1_id = ? WHERE id = ?";
 
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             // Versuche, einen wartenden Gegner zu finden
             PreparedStatement findStmt = connection.prepareStatement(findOpponentQuery);
@@ -434,7 +429,7 @@ public class GameService
     public void addOpponent(int userId)
     {
         String query = "INSERT INTO battles (user2_id) VALUES (?)";
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setInt(1, userId);
@@ -453,7 +448,7 @@ public class GameService
     {
         // Wählen Sie die Karte mit der übergebenen ID aus der cards Tabelle aus
         String query = "SELECT * FROM cards WHERE id = ?";
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setString(1, cardId);
@@ -484,7 +479,7 @@ public class GameService
     {
         // Wählen Sie den Namen des Users mit der übergebenen ID aus der users Tabelle aus
         String query = "SELECT username FROM users WHERE id = ?";
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setInt(1, userId);
@@ -516,7 +511,8 @@ public class GameService
                 "JOIN users u ON u.deck_id = dc.deck_id " +
                 "WHERE u.id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setInt(1, userId);
 
@@ -585,7 +581,7 @@ public class GameService
                 "FROM users u " +
                 "JOIN stats s ON u.id = s.user_id " +
                 "WHERE u.id = ?";
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setInt(1, userId);
@@ -619,7 +615,8 @@ public class GameService
         // Definieren Sie die SQL-Abfrage zum Aktualisieren der Statistiken
         String updateQuery = "UPDATE stats SET elo = ?, wins = ?, losses = ? WHERE user_id = ?";
 
-        try {
+        try (Connection connection = DatabaseConnection.getConnection())
+        {
             // Erstellen Sie ein PreparedStatement für die SQL-Abfrage
             PreparedStatement stmt = connection.prepareStatement(updateQuery);
 
@@ -648,7 +645,7 @@ public class GameService
     {
         // Wählen Sie die ID des Kampfes aus der battles Tabelle aus
         String query = "SELECT id FROM battles WHERE user1_id = ? AND user2_id = ? AND log IS NULL";
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setInt(1, userId);
@@ -677,7 +674,8 @@ public class GameService
         // SQL-Query, um das Battle-Log zu aktualisieren
         String query = "UPDATE battles SET log = ? WHERE id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setString(1, battleLog);
             stmt.setInt(2, battleId);
@@ -699,7 +697,7 @@ public class GameService
     // Aktualisieren das Scoreboard
     public void updateScoreboard()
     {
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             connection.setAutoCommit(false);
 

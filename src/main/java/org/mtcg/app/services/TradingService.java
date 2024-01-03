@@ -13,11 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TradingService
 {
-    private Connection connection;
-    public TradingService()
-    {
-        this.connection = DatabaseConnection.getConnection();
-    }
 
     // Hole alle Handelsangebote aus der Datenbank
     public List<TradeOffer> getTrades()
@@ -27,7 +22,8 @@ public class TradingService
         try
         {
             String query = "SELECT Id, offered_card_id, minimum_damage, Type FROM trades";
-            try (PreparedStatement stmt = connection.prepareStatement(query))
+            try (Connection connection = DatabaseConnection.getConnection();
+                 PreparedStatement stmt = connection.prepareStatement(query))
             {
                 ResultSet rs = stmt.executeQuery();
 
@@ -71,8 +67,7 @@ public class TradingService
         ObjectMapper mapper = new ObjectMapper();
         try
         {
-            TradeOffer trade = mapper.readValue(requestBody, TradeOffer.class);
-            return trade;
+            return mapper.readValue(requestBody, TradeOffer.class);
         }
         catch (Exception e)
         {
@@ -110,12 +105,42 @@ public class TradingService
         return null;
     }
 
+    // Überprüfe, ob die Angebotskarte dem Benutzer gehört
+    public boolean checkOwnershipTradeCard(int userId, String CardId)
+    {
+        String query = "SELECT user_id FROM user_cards WHERE card_id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
+        {
+            stmt.setString(1, CardId);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next())
+            {
+                int ownerId = rs.getInt("user_id");
+
+                // Wenn der Benutzer der Besitzer der Karte ist, geben true zurück
+                if(ownerId == userId)
+                {
+                    return true;
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // Überprüfe, ob die Karte dem Benutzer gehört
     public boolean checkOwnership(int userId, String tradeId)
     {
         String query = "SELECT user_id FROM trades WHERE id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setString(1, tradeId);
 
@@ -143,7 +168,8 @@ public class TradingService
     {
         String query = "SELECT deck_id FROM users WHERE id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setInt(1, userId);
 
@@ -185,7 +211,8 @@ public class TradingService
         try
         {
             String query = "INSERT INTO trades (id, user_id, offered_card_id, minimum_damage, type) VALUES (?, ?, ?, ?, ?)";
-            try (PreparedStatement stmt = connection.prepareStatement(query))
+            try (Connection connection = DatabaseConnection.getConnection();
+                 PreparedStatement stmt = connection.prepareStatement(query))
             {
                 stmt.setString(1, trade.getId());
                 stmt.setInt(2, userId);
@@ -224,7 +251,8 @@ public class TradingService
     {
         String query = "SELECT COUNT(*) FROM trades WHERE id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setString(1, tradeId);
 
@@ -251,7 +279,8 @@ public class TradingService
 
         // Überprüfen, ob das Handelsangebot existiert
         String checkQuery = "SELECT COUNT(*) FROM trades WHERE id = ?";
-        try (PreparedStatement checkStmt = connection.prepareStatement(checkQuery))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement checkStmt = connection.prepareStatement(checkQuery))
         {
             checkStmt.setString(1, tradeId);
             ResultSet rs = checkStmt.executeQuery();
@@ -269,7 +298,8 @@ public class TradingService
 
         // Löschen Sie das Handelsangebot
         String deleteQuery = "DELETE FROM trades WHERE id = ?";
-        try (PreparedStatement deleteStmt = connection.prepareStatement(deleteQuery))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement deleteStmt = connection.prepareStatement(deleteQuery))
         {
             deleteStmt.setString(1, tradeId);
             int affectedRows = deleteStmt.executeUpdate();
@@ -295,7 +325,8 @@ public class TradingService
 
         String query = "SELECT Id, offered_card_id, minimum_damage, Type FROM trades WHERE id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setString(1, tradeId);
 
@@ -331,17 +362,44 @@ public class TradingService
         return false;
     }
 
-    // Führen Sie den Handel aus
-    public boolean executeTrade(TradeOffer trade, Card offeredCard, int userId)
+    // Hole die ID des Benutzers, der das Handelsangebot erstellt hat
+    public int getTradeCreatorId(String tradeId)
     {
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
+        {
+            String query = "SELECT user_id FROM trades WHERE id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query))
+            {
+                stmt.setString(1, tradeId);
+
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next())
+                {
+                    return rs.getInt("user_id");
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    // Führen Sie den Handel aus
+    public boolean executeTrade(TradeOffer trade, Card offeredCard, int userId, int tradeCreatorId)
+    {
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             connection.setAutoCommit(false);
 
-            // Löschen Sie die Karte aus den Benutzerkarten
-            String deleteCardQuery = "DELETE FROM user_cards WHERE card_id = ?";
-            try (PreparedStatement deleteCardStmt = connection.prepareStatement(deleteCardQuery)) {
+            // Lösche beide Karten aus der user_cards Tabelle
+            String deleteCardQuery = "DELETE FROM user_cards WHERE card_id = ? AND user_id = ?";
+
+            try (PreparedStatement deleteCardStmt = connection.prepareStatement(deleteCardQuery))
+            {
                 deleteCardStmt.setString(1, offeredCard.getId());
+                deleteCardStmt.setInt(2, userId);
                 deleteCardStmt.executeUpdate();
             }
             catch (SQLException e)
@@ -351,12 +409,41 @@ public class TradingService
                 return false;
             }
 
-            // Füge die angebotene Karte zu den Benutzerkarten hinzu
-            String addCardQuery = "INSERT INTO user_cards (user_id, card_id) VALUES (?, ?)";
-            try (PreparedStatement addCardStmt = connection.prepareStatement(addCardQuery)) {
-                addCardStmt.setInt(1, userId);
-                addCardStmt.setString(2, offeredCard.getId());
-                addCardStmt.executeUpdate();
+            try (PreparedStatement deleteCardStmt = connection.prepareStatement(deleteCardQuery))
+            {
+                deleteCardStmt.setString(1, trade.getCardToTrade());
+                deleteCardStmt.setInt(2, tradeCreatorId);
+                deleteCardStmt.executeUpdate();
+            }
+            catch (SQLException e)
+            {
+                connection.rollback();
+                e.printStackTrace();
+                return false;
+            }
+
+            // Fügen Sie beide Karten in die user_cards Tabelle ein
+
+            String insertCardQuery = "INSERT INTO user_cards (user_id, card_id) VALUES (?, ?)";
+
+            try (PreparedStatement insertCardStmt = connection.prepareStatement(insertCardQuery))
+            {
+                insertCardStmt.setInt(1, userId);
+                insertCardStmt.setString(2, trade.getCardToTrade());
+                insertCardStmt.executeUpdate();
+            }
+            catch (SQLException e)
+            {
+                connection.rollback();
+                e.printStackTrace();
+                return false;
+            }
+
+            try (PreparedStatement insertCardStmt = connection.prepareStatement(insertCardQuery))
+            {
+                insertCardStmt.setInt(1, tradeCreatorId);
+                insertCardStmt.setString(2, offeredCard.getId());
+                insertCardStmt.executeUpdate();
             }
             catch (SQLException e)
             {

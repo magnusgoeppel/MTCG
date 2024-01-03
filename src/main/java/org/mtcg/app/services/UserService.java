@@ -1,9 +1,12 @@
 package org.mtcg.app.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Setter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mtcg.app.models.UserData;
 import org.mtcg.database.DatabaseConnection;
+
+import java.lang.reflect.Executable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,18 +15,11 @@ import java.sql.SQLException;
 @Setter
 public class UserService
 {
-    // Verbindung zur Datenbank
-    private Connection connection;
-
-    public UserService()
-    {
-        this.connection = DatabaseConnection.getConnection();
-    }
 
     // Registrieren eines Benutzers
     public boolean registerUser(String username, String password)
     {
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             connection.setAutoCommit(false);
 
@@ -60,7 +56,7 @@ public class UserService
                 if (userResult == 1)
                 {
                     // Hole die ID des Benutzers
-                    int userId = getUserId(username);
+                    int userId = getUserId(username, connection);
 
                     if(userId == -1)
                     {
@@ -69,8 +65,8 @@ public class UserService
                     }
 
                     // Rufe Methode zum Stats erstellen auf
-                    boolean statsCreated = createStats(userId);
-                    boolean userAddedToScoreboard = addUserToScoreboard(userId);
+                    boolean statsCreated = createStats(userId, connection);
+                    boolean userAddedToScoreboard = addUserToScoreboard(userId, connection);
 
                     if(!statsCreated || !userAddedToScoreboard)
                     {
@@ -104,7 +100,7 @@ public class UserService
     // Anmelden eines Benutzers
     public boolean loginUser(String username, String password)
     {
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             // Überprüfen, ob der Benutzername bereits vergeben ist
             String query = "SELECT * FROM users WHERE username = ? AND password = ?";
@@ -117,7 +113,7 @@ public class UserService
 
             return rs.next();
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return false;
@@ -127,7 +123,29 @@ public class UserService
     // Speichern Sie das Token für einen Benutzer in der Datenbank
     public boolean saveUserToken(String username, String token)
     {
-        try
+        // Überprüfe, ob der Token bereits vergeben ist
+        try (Connection connection = DatabaseConnection.getConnection())
+        {
+            String query = "SELECT * FROM users WHERE token = ?";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, token);
+
+            // Führe die SQL-Abfrage aus
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next())
+            {
+                return false;
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+
+        // Speichere den Token in der Datenbank
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             String query = "UPDATE users SET token = ? WHERE username = ?";
             PreparedStatement stmt = connection.prepareStatement(query);
@@ -137,7 +155,7 @@ public class UserService
             int result = stmt.executeUpdate();
             return result > 0;
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return false;
@@ -147,7 +165,7 @@ public class UserService
     // Extrahieren Sie die Benutzerdaten (Name, Bio, Image)
     public String getUserData(int userId)
     {
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             String query = "SELECT name, bio, image FROM users WHERE id = ?";
             PreparedStatement stmt = connection.prepareStatement(query);
@@ -165,23 +183,26 @@ public class UserService
                 ObjectMapper mapper = new ObjectMapper();
                 return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(userData);
             }
-
             else
             {
                 return null;
             }
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return null;
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
         }
     }
 
     // Aktualisieren Sie die Benutzerdaten (Name, Bio, Image)
     public boolean updateUser(int userId, String name, String bio, String image)
     {
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             String query = "UPDATE users SET name = ?, bio = ?, image = ? WHERE id = ?";
             PreparedStatement stmt = connection.prepareStatement(query);
@@ -193,7 +214,7 @@ public class UserService
             int result = stmt.executeUpdate();
             return result > 0;
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return false;
@@ -203,7 +224,7 @@ public class UserService
     // Löschen Sie das Token für einen Benutzer in der Datenbank
     public boolean deleteUserToken(int UserId)
     {
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             String query = "UPDATE users SET token = NULL WHERE id = ?";
             PreparedStatement stmt = connection.prepareStatement(query);
@@ -212,7 +233,7 @@ public class UserService
             int result = stmt.executeUpdate();
             return result > 0;
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return false;
@@ -221,7 +242,7 @@ public class UserService
 
     // ------------------------------ Hilfsfunktionen ------------------------------
 
-    public int getUserId(String username)
+    public int getUserId(String username, Connection connection)
     {
         try
         {
@@ -239,7 +260,7 @@ public class UserService
                 return -1;
             }
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return -1;
@@ -249,7 +270,7 @@ public class UserService
     // Holen Sie den Benutzernamen eines Benutzers
     public String getUsername(int userId)
     {
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             String query = "SELECT username FROM users WHERE id = ?";
             PreparedStatement stmt = connection.prepareStatement(query);
@@ -265,7 +286,7 @@ public class UserService
                 return null;
             }
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return null;
@@ -273,7 +294,7 @@ public class UserService
     }
 
     // Erstellen Sie die Stats für einen Benutzer
-    public boolean createStats(int user_id)
+    public boolean createStats(int user_id, Connection connection)
     {
         try
         {
@@ -284,7 +305,7 @@ public class UserService
             int result = stmt.executeUpdate();
             return result > 0;
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return false;
@@ -292,7 +313,7 @@ public class UserService
     }
 
     // Fügen Sie einen Benutzer zum Scoreboard hinzu
-    public boolean addUserToScoreboard(int user_id)
+    public boolean addUserToScoreboard(int user_id, Connection connection)
     {
         try
         {
@@ -303,7 +324,7 @@ public class UserService
             int result = stmt.executeUpdate();
             return result > 0;
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return false;

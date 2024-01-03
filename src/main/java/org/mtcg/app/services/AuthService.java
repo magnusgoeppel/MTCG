@@ -10,14 +10,6 @@ import java.sql.SQLException;
 
 public class AuthService
 {
-    // Verbindung zur Datenbank
-    private Connection connection;
-
-    public AuthService()
-    {
-        this.connection = DatabaseConnection.getConnection();
-    }
-
     // Extrahiert den Benutzernamen aus dem Token
     public int extractUserIdFromAuthHeader(Request request)
     {
@@ -35,7 +27,8 @@ public class AuthService
 
         String query = "SELECT id FROM users WHERE token = ?";
 
-         try(PreparedStatement stmt = connection.prepareStatement(query))
+         try (Connection connection = DatabaseConnection.getConnection();
+              PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setString(1, token);
             ResultSet resultSet = stmt.executeQuery();

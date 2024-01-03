@@ -2,7 +2,6 @@ package org.mtcg.app.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.mtcg.app.models.Card;
 import org.mtcg.database.DatabaseConnection;
 
@@ -15,14 +14,6 @@ import java.util.List;
 
 public class CardsService
 {
-    // Verbindung zur Datenbank
-    private Connection connection;
-
-    public CardsService()
-    {
-        this.connection = DatabaseConnection.getConnection();
-    }
-
     // Speicher der Karten des Benutzers
     public List<Card> getCardsForUser(int userId)
     {
@@ -30,7 +21,8 @@ public class CardsService
 
         String query = "SELECT * FROM cards WHERE id IN (SELECT card_id FROM user_cards WHERE user_id = ?)";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
@@ -62,7 +54,8 @@ public class CardsService
                        // Stellt sicher, dass die Karte nicht als Trade angeboten wird
                        "AND t.offered_card_id IS NULL";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
@@ -152,7 +145,8 @@ public class CardsService
         // Zählen Sie die Anzahl der Karten, die dem Benutzer gehören
         String query = "SELECT COUNT(*) AS card_count FROM user_cards WHERE user_id = ? AND card_id IN (?, ?, ?, ?)";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setInt(1, userId);
 
@@ -182,7 +176,7 @@ public class CardsService
     // Konfigurieren des Decks des Benutzers
     public boolean configureDeckForUser(int userId, List<String> cardIds)
     {
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             // Beginnen Sie eine Transaktion
             connection.setAutoCommit(false);

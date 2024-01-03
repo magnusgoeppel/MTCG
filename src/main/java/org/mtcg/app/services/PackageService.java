@@ -15,14 +15,6 @@ import java.util.List;
 
 public class PackageService
 {
-    // Verbindung zur Datenbank
-    private Connection connection;
-
-    public PackageService()
-    {
-        this.connection = DatabaseConnection.getConnection();
-    }
-
 
     // Methode zum Abrufen des Tokens des Admins
     public String getAdminToken()
@@ -30,7 +22,8 @@ public class PackageService
         String adminToken = null;
         String query = "SELECT token FROM users WHERE username = 'admin'";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             ResultSet rs = stmt.executeQuery();
 
@@ -86,7 +79,7 @@ public class PackageService
     // Erstellen eines Pakets und der Karten
     public boolean createPackage(List<Card> cards)
     {
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             connection.setAutoCommit(false);
 
@@ -169,7 +162,8 @@ public class PackageService
     {
         String query = "SELECT coins FROM users WHERE id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
@@ -212,7 +206,7 @@ public class PackageService
     // Paket kaufen
     public boolean acquirePackage(int userId)
     {
-        try
+        try (Connection connection = DatabaseConnection.getConnection())
         {
             connection.setAutoCommit(false);
 
@@ -298,7 +292,8 @@ public class PackageService
     {
         String query = "SELECT id FROM packages ORDER BY id LIMIT 1";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             ResultSet rs = stmt.executeQuery();
 
@@ -325,7 +320,8 @@ public class PackageService
 
         String query = "SELECT card_id FROM package_cards WHERE package_id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query))
         {
             stmt.setInt(1, packageId);
             ResultSet rs = stmt.executeQuery();
@@ -347,7 +343,8 @@ public class PackageService
     {
         // Löschen Sie alle Karten aus der package_cards Tabelle, die zum Paket gehören
         String deleteCardsQuery = "DELETE FROM package_cards WHERE package_id = ?";
-        try (PreparedStatement deleteCardsStmt = connection.prepareStatement(deleteCardsQuery))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement deleteCardsStmt = connection.prepareStatement(deleteCardsQuery))
         {
             deleteCardsStmt.setInt(1, packageId);
             deleteCardsStmt.executeUpdate();
@@ -361,7 +358,8 @@ public class PackageService
         // Löschen Sie das Paket aus der packages Tabelle
         String deletePackageQuery = "DELETE FROM packages WHERE id = ?";
 
-        try (PreparedStatement deletePackageStmt = connection.prepareStatement(deletePackageQuery))
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement deletePackageStmt = connection.prepareStatement(deletePackageQuery))
         {
             deletePackageStmt.setInt(1, packageId);
             deletePackageStmt.executeUpdate();

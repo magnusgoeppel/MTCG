@@ -36,9 +36,7 @@ public class DatabaseSetup
             String createCardTable = "CREATE TABLE IF NOT EXISTS cards (" +
                                      "id VARCHAR(255) PRIMARY KEY ," +
                                      "name VARCHAR(255) NOT NULL," +
-                                     "damage DOUBLE PRECISION NOT NULL," +
-                                     "elementType VARCHAR(255)," +
-                                     "type VARCHAR(50)" +
+                                     "damage DOUBLE PRECISION NOT NULL" +
                                      ")";
             stmt.execute(createCardTable);
 

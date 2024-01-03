@@ -17,14 +17,15 @@ import java.util.*;
 // Testklasse für die Unit-Tests
 public class UnitTests
 {
-
     // Registrierung eines Benutzers
     @Test
     public void testRegisterUser()
     {
         UserService userService = Mockito.mock(UserService.class);
         when(userService.registerUser(anyString(), anyString())).thenReturn(true);
+
         boolean result = userService.registerUser("newUser", "password123");
+
         assertTrue(result, "User should be registered successfully");
     }
 
@@ -34,7 +35,9 @@ public class UnitTests
     {
         UserService userService = Mockito.mock(UserService.class);
         when(userService.loginUser(anyString(), anyString())).thenReturn(true);
+
         boolean result = userService.loginUser("newUser", "password123");
+
         assertTrue(result, "User should be logged in successfully");
     }
 
@@ -44,7 +47,9 @@ public class UnitTests
     {
         UserService userService = Mockito.mock(UserService.class);
         when(userService.updateUser(anyInt(), anyString(), anyString(), anyString())).thenReturn(true);
+
         boolean result = userService.updateUser(1, "Updated Name", "Updated Bio", "Updated Image");
+
         assertTrue(result, "User data should be updated successfully");
     }
 
@@ -54,7 +59,9 @@ public class UnitTests
     {
         UserService userService = Mockito.mock(UserService.class);
         when(userService.saveUserToken(anyString(), anyString())).thenReturn(true);
+
         boolean result = userService.saveUserToken("newUser", "newUser-mtcgToken");
+
         assertTrue(result, "User data should be updated successfully");
     }
 
@@ -64,7 +71,9 @@ public class UnitTests
     {
         UserService userService = Mockito.mock(UserService.class);
         when(userService.deleteUserToken(anyInt())).thenReturn(true);
+
         boolean result = userService.deleteUserToken(1);
+
         assertTrue(result, "User data should be updated successfully");
     }
 
@@ -95,16 +104,20 @@ public class UnitTests
     {
         // Arrange
         PackageService service = new PackageService();
-        String jsonInput = "[{\"id\":\"1\",\"name\":\"FireSpell\",\"damage\":50}]";
+        String jsonInput = "[{\"Id\":\"24024902lkwnglwr\",\"Name\":\"FireSpell\",\"Damage\":50}]";
 
         // Act
         List<Card> cards = service.convertJsonToCards(jsonInput);
 
         // Assert
         assertNotNull(cards, "The returned list should not be null.");
-        assertEquals(1, cards.size(), "The list should contain one card.");
-        assertEquals("FireSpell", cards.get(0).getName(), "The card name should be FireSpell.");
+        assertEquals(1, cards.size(), "The returned list should contain 1 card.");
+        assertEquals("24024902lkwnglwr", cards.get(0).getId(), "The ID of the card should be 24024902lkwnglwr.");
+        assertEquals("FireSpell", cards.get(0).getName(), "The name of the card should be FireSpell.");
+        assertEquals(50, cards.get(0).getDamage(), "The damage of the card should be 50.");
     }
+
+
 
 
     // Überprüfen der Kartenexistenz
@@ -426,5 +439,4 @@ public class UnitTests
 
         assertEquals(1, result, "The trade should be deleted successfully");
     }
-
 }
