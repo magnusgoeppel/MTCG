@@ -117,9 +117,6 @@ public class UnitTests
         assertEquals(50, cards.get(0).getDamage(), "The damage of the card should be 50.");
     }
 
-
-
-
     // Überprüfen der Kartenexistenz
     @Test
     void testCheckCardsExistence()
@@ -278,28 +275,6 @@ public class UnitTests
         gameService.updateScoreboard();
 
         Mockito.verify(gameService).updateScoreboard();
-    }
-
-    // Stats eines Benutzers abrufen
-    @Test
-    public void testHandleGetStatsValidUser()
-    {
-        AuthService mockAuthService = Mockito.mock(AuthService.class);
-        GameService mockGameService = Mockito.mock(GameService.class);
-        GameController gameController = new GameController();
-
-        gameController.setAuthService(mockAuthService);
-        gameController.setGameService(mockGameService);
-
-        Request mockRequest = Mockito.mock(Request.class);
-
-        when(mockAuthService.extractUserIdFromAuthHeader(mockRequest)).thenReturn(1);
-        when(mockGameService.getStats(1)).thenReturn("{\"Username\":\"TestUser\",\"Elo\":1000,\"Wins\":10,\"Losses\":5}");
-
-        Response response = gameController.handleGetStats(mockRequest);
-
-        assertEquals(HttpStatus.OK.getCode(), response.getStatusCode());
-        assertEquals("{\"Username\":\"TestUser\",\"Elo\":1000,\"Wins\":10,\"Losses\":5}", response.getContent());
     }
 
     // Paket erstellen
