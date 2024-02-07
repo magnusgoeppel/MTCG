@@ -64,10 +64,3 @@ Die Logout-Funktion im Spiel ermöglicht Spielern, sich abzumelden. Diese benutz
 ### Gewonnene Erkenntnisse
 Während des Projekts habe ich die Wichtigkeit von sauberem und modularisiertem Code erkannt, praktische Erfahrung mit den Tools Curl, Java, PostgreSQL und 
 Docker gesammelt und die Bedeutung und Anwendung von Unit-Tests kennengelernt.
-
-### Aufgewendete Zeit
-Das gesamte Projekt hat insgesamt 53 Stunden in Anspruch genommen, wobei die aufgewendete Zeit mit WakaTime getrackt wurde. Hier ist der Link zur Aufzeichnung: 
-[WakaTime Link](https://wakatime.com/@018b6d16-b576-4d15-8e74-23440d32542a/projects/qjnhhifall?start=2023-12-31&end=2024-01-06)
-
-### Git-Repository
-Das Git-Repository für das Projekt befindet sich unter: [MTCG GitHub](https://github.com/magnusgoeppel/MTCG)
