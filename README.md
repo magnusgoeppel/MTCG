@@ -1,65 +1,47 @@
-﻿# Monster Trading Card Game (MTCG)
+# Monster Trading Card Game (MTCG)
 
-## Projektbeschreibung
-Das Monster Trading Card Game (MTCG) ist ein Kartenspiel, in dem Spieler Karten sammeln, tauschen und gegen andere Spieler antreten
-können. Die Spieler erstellen Decks aus ihren Karten und nutzen diese, um in Kämpfen gegeneinander anzutreten.
+## Project Description
+The Monster Trading Card Game (MTCG) is a card game where players can collect, trade, and battle with cards against other players. Players create decks from their cards and use them to compete in battles.
 
+## Features
 
-## Funktionen
+### User Registration and Management
+Users can register for the Monster Trading Card Game by providing a username and password. After registration, users can log in and receive a token for future requests. Players can edit their personal information such as name, bio, and picture. They can also log out, invalidating their authentication token.
 
-### Benutzerregistrierung und -verwaltung
-Benutzer können sich im Monster Trading Card Game registrieren, indem sie einen Benutzernamen und ein Passwort angeben. 
-Nach der Registrierung können Benutzer sich anmelden und erhalten ein Token, das für zukünftige Anfragen verwendet wird. 
-Spieler können ihre persönlichen Daten wie Namen, Bio und Bild bearbeiten. Zum Schluss können sie sich auch abmelden, 
-wodurch ihr Authentifizierungstoken ungültig wird.
+### Card Collection and Deck Building
+Players can acquire card packs to expand their collection. Each pack contains a random selection of cards. Players can view their collected cards and assemble a deck from them to use in battles against other players.
 
-### Kartensammlungen und Deckerstellung
-Spieler können Kartenpakete erwerben, um ihre Sammlung zu erweitern. Jedes Paket enthält eine zufällige Auswahl an Karten. Spieler können 
-ihre gesammelten Karten einsehen und aus diesen ein Deck zusammenstellen, das in Kämpfen gegen andere Spieler verwendet wird. 
+### Battle System
+Players can battle against other players in the game. An automated system selects an opponent and conducts the battle. After the battle, players receive a detailed log showing the actions and the outcome. Players can view their own statistics such as the number of wins and losses, and there is a scoreboard where players are ranked by Elo rating.
 
-### Kampfsystem
-Spieler können gegen andere Spieler im Spiel antreten. Ein automatisiertes System wählt einen Gegner aus und führt den Kampf durch. 
-Nach dem Kampf erhalten die Spieler ein detailliertes Protokoll, das die Aktionen und das Endergebnis aufzeigt. 
-Spieler können ihre eigenen Statistiken wie die Anzahl der gewonnenen und verlorenen Kämpfe einsehen, zudem gibt es ein Scoreboard,
-wo die Spieler nach Elo-Rating sortiert werden.
+### Card Trading System
+Players have the option to create, view, and respond to trade offers in the game. They can offer their own cards for trade and set specific requirements for the trade. Players can view trade offers from other players and propose their own cards in exchange. They can also withdraw their own trade offers.
 
-### Kartenhandelssystem
-Spieler haben die Möglichkeit Handelsangebote im Spiel zu erstellen, einzusehen und darauf zu reagieren. 
-Sie können eigene Karten zum Handel anbieten und spezifische Anforderungen für den Handel festlegen. 
-Spieler können Handelsangebote anderer Spieler einsehen und eigene Karten im Austausch anbieten. 
-Eigene Handelsangebote können auch zurückgezogen werden.
+## Installation and Execution
 
+### Prerequisites
+- Java (JDK 11 or newer)
+- Apache Maven (version 3.6.3 or newer)
+- PostgreSQL database (version 12 or newer)
 
-## Installation und Ausführung
+### Setup Steps
 
-### Voraussetzungen
-- Java (JDK 11 oder neuer) 
-- Apache Maven (Version 3.6.3 oder neuer)
-- PostgreSQL Datenbank (Version 12 oder neuer)
+1. **Clone the Git Repository**
+    - Open a terminal or command prompt.
+    - Run the command: `git clone https://github.com/magnusgoeppel/MTCG`.
 
-### Schritte zur Einrichtung
+2. **Prepare the Database**
+    - Create a new user named `admin` with the password `1234` in PostgreSQL, or adjust the `admin` and `password` variables in the `org.mtcg.Database.DatabaseSetup` file to match your PostgreSQL user data.
+    - Create a new database named `mtcg` in PostgreSQL, ensuring that the user has all the necessary rights on the database.
 
-1. **Klonen des Git-Repositorys**
-    - Öffnen Sie ein Terminal oder eine Eingabeaufforderung.
-    - Führen Sie den Befehl aus: `git clone https://github.com/magnusgoeppel/MTCG`.
+3. **Compile the Project**
+    - Navigate to the main directory of the project via the terminal or command prompt.
+    - Run the command: `javac Main.java`.
 
-2. **Vorbereiten der Datenbank**
-    - Erstellen Sie einen neuen Benutzer mit dem Namen `admin` und dem Passwort `1234` in PostgreSQL 
-      oder passen Sie die Variablen `admin` und `passwort` in der Datei `org.mtcg.Database.DatabaseSetup` 
-      auf ihre SQLPostrgres Benutzerdaten entsprechend an.
-     - Erstellen Sie eine neue Datenbank mit dem Namen `mtcg` in PostgreSQL, 
-       beachten Sie dabei das der Benutzer alle Rechte auf die Datenbank hat.
+4. **Start the Server**
+    - Start the server with the command: `java org.mtcg.Main`.
 
-3. **Kompilieren des Projekts**
-    - Navigieren Sie in das Hauptverzeichnis des Projekts über das Terminal oder die Eingabeaufforderung.
-    - Führen Sie den Befehl aus: `javac Main.java`.
-
-4. **Starten des Servers**
-    - Starten Sie den Server mit dem Befehl: `java org.mtcg.Main`.
-
-### Ausführen der Anwendung
-- Nach dem Start können Sie die REST API über die URL `http://localhost:10001/` erreichen.
-- Verwenden Sie `curl` um HTTP-Anfragen an die REST API zu senden. Im Verzeichnis `test` befinden sich zwei `curl`-Skripte, 
-  die die Funktionalität der REST API demonstrieren, eines davon mit Ausgabe der HTTP-Header und Pausen zwischen den Anfragen und eines ohne.
-- Zudem befindet sich im Verzeichnis `test` die Datei `mtcg-api.yaml`, welche die REST API beschreibt und 
-  ein Überblick über die verfügbaren Endpunkte gibt.
+### Running the Application
+- After starting the server, you can access the REST API at the URL `http://localhost:10001/`.
+- Use `curl` to send HTTP requests to the REST API. The `test` directory contains two `curl` scripts demonstrating the functionality of the REST API, one with HTTP header output and pauses between requests, and one without.
+- The `test` directory also contains the file `mtcg-api.yaml`, which describes the REST API and provides an overview of the available endpoints.
